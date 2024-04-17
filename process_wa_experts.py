@@ -1,5 +1,7 @@
 import psycopg2
 import datetime  # Assuming you need to generate 'date'
+import re
+import os
 
 # Replace placeholders with your actual database credentials
 DATABASE_CONFIG = {
@@ -10,6 +12,8 @@ DATABASE_CONFIG = {
     'port': 5432
 }
 
+BRACKET_START = '___bracket_start___'
+
 def find_string_enclosed_in(string, start, end):
     try:
         start_index = string.index(start) + len(start)
@@ -17,6 +21,30 @@ def find_string_enclosed_in(string, start, end):
         return string[start_index:end_index]
     except ValueError:
         return ''
+
+def convert_date_string_to_datetime(date_string):
+    from datetime import datetime
+
+    # Split the date and time parts
+    date_part, time_part = date_string.split(",")
+
+    # Define the format for the date
+    date_format = "%d/%m/%y"
+
+    # Parse the date part
+    date_object = datetime.strptime(date_part.strip(), date_format)
+
+    # Define the format for the time (assuming 24-hour format for consistency)
+    time_format = "%H:%M:%S"
+
+    # Parse the time part, handling potential leading whitespace with strip()
+    time_object = datetime.strptime(time_part.strip().split(" ")[0], time_format)
+
+    # Combine the date and time objects
+    datetime_object = datetime.combine(date_object, time_object.time())
+
+    return datetime_object
+
 
 def save_message_to_database(message_data):
     date = message_data['date'] 
@@ -42,7 +70,25 @@ filename = '/Users/kastro/Downloads/WhatsApp Chat - UP/_chat.txt'
 
 # Read the file
 with open(filename, 'r') as file:
-    data = file.read()
+    data_file = file.read()
+
+date_regex =  r"^\[\d+/\d+/\d+, \d+:\d+:\d+\u202f(A|P)M\]"
+
+start_bracket_regex = r"^\["
+start_space_regex = r"^\u200e"
+
+data = ''
+
+lines = data_file.split('\n')
+
+for line in lines:
+    if (re.match(start_bracket_regex, line) and not re.match(date_regex, line)):
+        line = re.sub(start_bracket_regex, BRACKET_START, line)
+
+    if (re.match(start_space_regex, line)):
+        line = re.sub(start_space_regex, '', line)
+
+    data += line + '\n'
 
 #replace the first character of the file
 data = data.replace('[', '', 1)
@@ -57,9 +103,9 @@ for line in lines:
 
     date_parts = line.split(']')
 
-    date = date_parts[0].replace('[', '')
+    date_string = date_parts[0].replace('[', '')
 
-    message = date_parts[1].strip()
+    message = date_parts[1].replace(BRACKET_START, '[').strip()
    
     attachment = find_string_enclosed_in(line, '<attached:', '>')
     phone_number = find_string_enclosed_in(line, '\u202a', '\u202c')
@@ -67,8 +113,12 @@ for line in lines:
     message = message.replace('<attached:' + attachment + '>', '');
     message = message.replace('\u202a' + phone_number + '\u202c:', '');
 
+    date = convert_date_string_to_datetime(date_string)
+
+    formatted_date = date.strftime('%Y-%m-%d %H:%M:%S')
+
     message_data = {
-        'date': date,
+        'date': formatted_date,
         'phone_number': find_string_enclosed_in(line, '\u202a', '\u202c'),
         'message': message,
         'attachment': attachment.strip()
