@@ -8,7 +8,8 @@ CREATE TABLE messages (
 	attachment TEXT NOT NULL,
 	version INTEGER NOT NULL DEFAULT 1,
 	created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
-	modified_at timestamp(0) with time zone NOT NULL DEFAULT NOW()
+	modified_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+	UNIQUE(message_date, phone_number)
 );
 
 CREATE OR REPLACE FUNCTION messages_update_modified_at()
@@ -26,4 +27,4 @@ FOR EACH ROW
 EXECUTE PROCEDURE messages_update_modified_at();
 --
 
-COMMIT;	
+COMMIT;
