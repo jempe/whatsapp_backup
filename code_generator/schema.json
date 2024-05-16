@@ -1,0 +1,140 @@
+{
+	"version": 1,
+	"go_module": "github.com/jempe/whatsapp_backup",
+	"db_name": "whatsapp",
+	"tables": [
+		{
+			"ItemsName": "Messages",
+			"ItemName": "Message",
+			"itemsName": "messages",
+			"itemName": "message",
+			"items_name": "messages",
+			"item_name": "message",
+			"has_embeddings": false,
+			"used_for_embeddings": true,
+			"key" : {
+				"FieldName": "ID",
+				"field_name": "id",
+				"goType": "int64"
+			},
+			"fields": [
+				{
+					"FieldName": "MessageDate",
+					"field_name": "message_date",
+					"enable_filter": false,
+					"enable_sort": true,
+					"goType": "time.Time",
+					"use_for_embeddings": false
+				},
+				{
+					"FieldName": "Message",
+					"field_name": "message",
+					"enable_filter": false,
+					"goType": "string",
+					"use_for_embeddings": true
+				},
+				{
+					"FieldName": "PhoneNumber",
+					"field_name": "phone_number",
+					"enable_filter": false,
+					"goType": "string",
+					"use_for_embeddings": false
+				},
+				{
+					"FieldName": "Attachment",
+					"field_name": "attachment",
+					"enable_filter": false,
+					"goType": "string",
+					"use_for_embeddings": false
+				},
+				{
+					"FieldName": "EnableSemanticSearch",
+					"field_name": "enable_semantic_search",
+					"enable_filter": true,
+					"enable_sort": true,
+					"goType": "bool"
+				},
+				{
+					"FieldName": "ChatID",
+					"field_name": "chat_id",
+					"enable_filter": false,
+					"enable_semantic_filter": true,
+					"goType": "int64"
+				}
+			]
+		},
+		{
+			"ItemsName": "Chats",
+			"ItemName": "Chat",
+			"itemsName": "chats",
+			"itemName": "chat",
+			"items_name": "chats",
+			"item_name": "chat",
+			"has_embeddings": false,
+			"used_for_embeddings": false,
+			"key" : {
+				"FieldName": "ID",
+				"field_name": "id",
+				"goType": "int64"
+			},
+			"fields": [
+				{
+					"FieldName": "Name",
+					"field_name": "name",
+					"enable_filter": true,
+					"enable_sort": true,
+					"goType": "string"
+				}
+			]
+		},
+		{
+			"ItemsName": "Phrases",
+			"ItemName": "Phrase",
+			"itemsName": "phrases",
+			"itemName": "phrase",
+			"items_name": "phrases",
+			"item_name": "phrase",
+			"has_embeddings": true,
+			"used_for_embeddings": false,
+			"key" : {
+				"FieldName": "ID",
+				"field_name": "id",
+				"goType": "int64"
+			},
+			"fields": [
+				{
+					"FieldName": "Content",
+					"field_name": "content",
+					"enable_filter": false,
+					"goType": "string"
+				},
+				{
+					"FieldName": "Tokens",
+					"field_name": "tokens",
+					"enable_filter": false,
+					"goType": "int"
+				},
+				{
+					"FieldName": "Sequence",
+					"field_name": "sequence",
+					"enable_filter": false,
+					"goType": "int"
+				},
+				{
+					"FieldName": "ContentField",
+					"field_name": "content_field",
+					"enable_filter": true,
+					"enable_sort": true,
+					"goType": "string"
+				},
+				{
+					"FieldName": "MessageID",
+					"field_name": "message_id",
+					"enable_filter": true,
+					"enable_sort": true,
+					"goType": "int64"
+				}
+			]
+		}
+	]
+}
