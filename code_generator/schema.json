@@ -1,13 +1,15 @@
 {
-	"version": 1,
+	"db_version": 1,
 	"go_module": "github.com/jempe/whatsapp_backup",
 	"db_name": "whatsapp",
+	"binary_version": "1.0.0",
+	"port": 8001,
+	"enable_semantic_search": true,
+	"embeddings_providers": ["sentence-transformers"],
 	"tables": [
 		{
 			"ItemsName": "Messages",
 			"ItemName": "Message",
-			"itemsName": "messages",
-			"itemName": "message",
 			"items_name": "messages",
 			"item_name": "message",
 			"has_embeddings": false,
@@ -31,7 +33,8 @@
 					"field_name": "message",
 					"enable_filter": false,
 					"goType": "string",
-					"use_for_embeddings": true
+					"use_for_embeddings": true,
+					"use_for_embeddings_title": true
 				},
 				{
 					"FieldName": "PhoneNumber",
@@ -48,13 +51,6 @@
 					"use_for_embeddings": false
 				},
 				{
-					"FieldName": "EnableSemanticSearch",
-					"field_name": "enable_semantic_search",
-					"enable_filter": true,
-					"enable_sort": true,
-					"goType": "bool"
-				},
-				{
 					"FieldName": "ChatID",
 					"field_name": "chat_id",
 					"enable_filter": false,
@@ -66,8 +62,6 @@
 		{
 			"ItemsName": "Chats",
 			"ItemName": "Chat",
-			"itemsName": "chats",
-			"itemName": "chat",
 			"items_name": "chats",
 			"item_name": "chat",
 			"has_embeddings": false,
@@ -90,8 +84,6 @@
 		{
 			"ItemsName": "Phrases",
 			"ItemName": "Phrase",
-			"itemsName": "phrases",
-			"itemName": "phrase",
 			"items_name": "phrases",
 			"item_name": "phrase",
 			"has_embeddings": true,
@@ -102,31 +94,6 @@
 				"goType": "int64"
 			},
 			"fields": [
-				{
-					"FieldName": "Content",
-					"field_name": "content",
-					"enable_filter": false,
-					"goType": "string"
-				},
-				{
-					"FieldName": "Tokens",
-					"field_name": "tokens",
-					"enable_filter": false,
-					"goType": "int"
-				},
-				{
-					"FieldName": "Sequence",
-					"field_name": "sequence",
-					"enable_filter": false,
-					"goType": "int"
-				},
-				{
-					"FieldName": "ContentField",
-					"field_name": "content_field",
-					"enable_filter": true,
-					"enable_sort": true,
-					"goType": "string"
-				},
 				{
 					"FieldName": "MessageID",
 					"field_name": "message_id",
