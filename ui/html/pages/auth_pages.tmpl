@@ -1,0 +1,475 @@
+{{define "styles"}}
+		<style>
+
+			/* common styles start */
+			.body {
+				display: flex;
+				justify-content: center;
+				margin: 0;
+				padding: 15px;
+			}
+
+			.user_page_container {
+				margin-top: 50px;
+				width: 300px;
+			}
+
+			.title {
+				color: #000;
+				font-family: var(--primary-font);
+				font-size: 54px;
+				font-style: normal;
+				font-weight: 700;
+				line-height: 91%;
+				margin: 10px;
+				margin: 0 0 10px 0;
+				padding: 0;
+			}
+
+			.footer_message {
+				color: #000;
+				font-family: var(--primary-font);
+				font-size: 14px;
+				font-style: normal;
+				font-weight: 400;
+				line-height: 110%;
+				padding: 0;
+				margin: 21px 0 0 0;
+			}
+
+			.user_form {
+				padding-top: 4px;
+			}
+
+			.text_link {
+				color: #5790FF;
+				font-family: var(--primary-font);
+				font-size: 14px;
+				font-style: normal;
+				font-weight: 400;
+				line-height: 110%;
+				text-decoration: none;
+			}
+
+			.password_field_container {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				column-gap: 10px;
+				border: solid 1px #CCC;
+				border-radius: 10px;
+				height: 30px;
+				padding: 10px;
+			}
+
+			.success_text_link {
+				display: inline-block;
+				color: white;
+			}
+			/* common styles end */
+
+			/* sign up styles start */
+
+			.password_reminder {
+				color: #000;
+				font-family: var(--primary-font);
+				font-size: 12px;
+				font-style: normal;
+				font-weight: 400;
+				line-height: 150.5%;
+				margin: -10px 0 25px 0;
+			}
+
+			/* sign up styles end */
+
+			/* login styles start */
+
+			.remember_me_section {
+				padding-bottom: 20px;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+
+			.remember_field_container {
+				display: flex;
+				column-gap: 5px;
+				align-items: center;
+			}
+
+			.remember_me_label {
+				font-family: var(--primary-font);
+				font-size: 0.9rem;
+			}
+			/* login styles end */
+
+			/* dynamic styles start */
+			.login_visible, .signup_visible, .activate_visible, .reset_visible, .forgot_visible, .remember_me_section, .request_activation_visible {
+				display: none;
+			}
+
+			.user_page_container[data-view="signup"] .signup_visible {
+				display: flex;
+			}
+
+			.user_page_container[data-view="login"] .login_visible {
+				display: flex;
+			}
+
+			.user_page_container[data-view="activate"] .activate_visible {
+				display: flex;
+			}
+
+			.user_page_container[data-view="reset"] .reset_visible {
+				display: flex;
+			}
+
+			.user_page_container[data-view="forgot"] .forgot_visible {
+				display: flex;
+			}
+
+			.user_page_container[data-view="request_activation"] .request_activation_visible {
+				display: flex;
+			}
+
+			.user_page_container.success .success_message {
+				display: block;
+			}
+
+			/* dynamic styles end */
+		</style>
+{{end}}
+{{define "body"}}
+	<body class="body">
+		<div class="user_page_container" data-view="signup">
+			<h1 class="title">Create <br>Account</h1>
+
+			<p class="success_message" id="success_message" >Account created successfully<br> Please check your email to activate your account</p>
+			<p class="error_message" id="error_message" ></p>
+
+			<form id="user_form" class="user_form">
+				<input type="hidden" id="reset_token">
+				<span class="field_section activate_visible">
+					<label class="field_label" for="activation_code">Activation Code</label>
+					<span class="error_message"></span>
+					<span class="field_input_container">
+						<input class="text_field" id="activation_code" name="activation_code" />
+					</span>
+				</span>
+				<span class="field_section signup_visible" id="name_field_section">
+					<label class="field_label" for="user_name">Name</label>
+					<span class="error_message"></span>
+					<span class="field_input_container">
+						<input class="text_field" id="user_name" name="name" />
+					</span>
+				</span>
+				<span class="field_section signup_visible login_visible forgot_visible request_activation_visible">
+					<label class="field_label" for="user_email">Email</label>
+					<span class="error_message"></span>
+					<span class="field_input_container">
+						<input class="text_field" id="user_email" type="email" name="email" />
+					</span>
+				</span>
+				<span class="field_section signup_visible login_visible reset_visible">
+					<label class="field_label" for="user_password">Password</label>
+					<span class="error_message"></span>
+					<span class="password_field_container">
+						<input class="text_field" id="user_password" type="password" name="password" />
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="12" viewBox="0 0 16 12" fill="none" id="show_password_button">
+							<path d="M1 6C1 6 3.54545 1 8 1C12.4545 1 15 6 15 6C15 6 12.4545 11 8 11C3.54545 11 1 6 1 6Z" stroke="black" stroke-linecap="round" stroke-linejoin="round"/>
+							<path d="M8 7.875C9.05436 7.875 9.90909 7.03553 9.90909 6C9.90909 4.96447 9.05436 4.125 8 4.125C6.94564 4.125 6.09091 4.96447 6.09091 6C6.09091 7.03553 6.94564 7.875 8 7.875Z" stroke="black" stroke-linecap="round" stroke-linejoin="round"/>
+						</svg>
+					</span>
+				</span>
+				<p class="password_reminder signup_visible">Password must minimun 8 characters</p>
+				<div class="remember_me_section login_visible">
+					<span class="remember_field_container">
+						<input type="checkbox" id="remember_me" name="remember_me" value="true">
+						<label for="remember_me" class="remember_me_label">Remember me</label>
+					</span>
+					<a href="forgot_password.html" class="text_link">Forgot Password?</a>
+				</div>
+				<button class="big_button" id="submit_button" type="submit">
+					<span class="big_button_spacer"></span>
+					<span class="big_button_text" id="submit_button_text">Sign Up</span>
+					<img class="big_button_arrow" src="static/img/chevron_forward_24dp_FILL0_wght400_GRAD0_opsz24.svg" alt="arrow right">
+				</button>
+			</form>
+			<p class="footer_message signup_visible">Already have account. <a href="login.html" class="text_link">Sign In</a></p>
+			<p class="footer_message login_visible">Don't have account. <a href="signup.html" class="text_link">Sign Up</a></p>
+			<p class="footer_message activate_visible">Already activated your account. <a href="login.html" class="text_link">Sign In</a></p>
+			<p class="footer_message reset_visible forgot_visible">Remembered your password. <a href="login.html" class="text_link">Sign In</a></p>
+		</div>
+		<script>
+			// define variables start
+			const userPageContainer = document.querySelector('.user_page_container');
+
+            		const title = document.querySelector('.title');
+			const userForm = document.getElementById('user_form');
+			const userNameField = document.getElementById('user_name');
+			const userPasswordField = document.getElementById('user_password');
+			const userEmailField = document.getElementById('user_email');
+			const userActivationCodeField = document.getElementById('activation_code');
+			const resetTokenField = document.getElementById('reset_token');
+			const rememberMeField = document.getElementById('remember_me');
+			const submitButton = document.getElementById('submit_button');
+			const submitButtonText = document.getElementById('submit_button_text');
+			const showPasswordButton = document.getElementById('show_password_button');
+			const successMessage = document.getElementById('success_message');
+			const errorMessageField = document.getElementById('error_message');
+
+			const signupUrl = 'v1/users';
+            		const loginUrl = 'v1/tokens/authentication';
+			const activateUrl = 'v1/users/activated';
+			const resetUrl = 'v1/users/password';
+			const forgotUrl = 'v1/tokens/password_reset';
+			const requestActivationUrl = 'v1/tokens/activation';
+
+
+			// show password start
+
+			showPasswordButton.addEventListener('click', () => {
+				if (userPasswordField.type === 'password') {
+					userPasswordField.type = 'text';
+				} else {
+					userPasswordField.type = 'password';
+				}
+			});
+			// show password end
+
+
+			// clear error message start
+
+			document.querySelectorAll('.text_field').forEach((field) => {
+				field.addEventListener('input', () => {
+					field.closest('.field_section').querySelector('.error_message').innerText = '';
+				});
+			});
+
+			// clear error message end
+
+			// submit start
+
+			userForm.addEventListener('submit', async (event) => {
+				event.preventDefault();
+
+				const name = userNameField.value;
+				const email = userEmailField.value;
+				const password = userPasswordField.value;
+
+				let submitMethod = 'POST';
+
+				let bodyData = {
+					email,
+					password,
+				};
+
+				let formUrl = loginUrl;
+
+				if(getCurrentView() === 'login' && rememberMeField.checked) {
+					bodyData.duration = "long";
+				}
+
+				// change the form url and body data if the current view is not login
+				if (getCurrentView() === 'signup') {
+					bodyData.name = name;
+					formUrl = signupUrl;
+				}
+
+				if (getCurrentView() === 'activate') {
+					bodyData = {
+						token: userActivationCodeField.value,
+					};
+
+					formUrl = activateUrl;
+
+					submitMethod = 'PUT';
+				}
+
+				if (getCurrentView() === 'reset') {
+					bodyData = {
+						token: resetTokenField.value,
+						password,
+					};
+
+					formUrl = resetUrl;
+
+					submitMethod = 'PUT';
+				}
+
+				if (getCurrentView() === 'forgot') {
+					bodyData = {
+						email,
+					};
+
+					formUrl = forgotUrl;
+
+					submitMethod = 'POST';
+				}
+
+				if (getCurrentView() === 'request_activation') {
+					bodyData = {
+						email,
+					};
+
+					formUrl = requestActivationUrl;
+
+					submitMethod = 'POST';
+				}
+
+				const response = await fetch(formUrl, {
+					method: submitMethod,
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(bodyData),
+				});
+
+				if (response.ok) {
+					const serverResponse = await response.json();
+					
+					const message = serverResponse.message;
+
+					if (message) {
+						successMessage.innerHTML = message;
+					}
+
+
+					if (getCurrentView() === 'login') {
+						const serverAuthToken = serverResponse.authentication_token;
+
+						const expirationDate = new Date(serverAuthToken.expiry);
+
+						let cookieString = `${authTokenCookieName}=${serverAuthToken.token}; path=/;`;
+
+						if (rememberMeField.checked) {
+							cookieString += ` expires=${expirationDate.toUTCString()};`;
+						}
+
+						document.cookie = cookieString;
+
+						window.location.href = '';
+
+					} else {
+						userPageContainer.classList.add('success');
+					}
+
+				} else {
+					const error = await response.json();
+
+					const activateErrorMessage = 'Your account is not activated. Please check your email and click on the activation link or click here to request a <a href="request_activation.html" class="text_link">new activation link</a>';
+
+					if (typeof error.error === 'string') {
+						let errorMessage = error.error;
+
+						if(errorMessage == 'your user account must be activated to access this resource') {
+							errorMessage = activateErrorMessage;
+						}
+
+
+						errorMessageField.innerHTML = errorMessage;
+					} else {
+						for (const [key, value] of Object.entries(error.error)) {
+							let errorMessage = value;
+
+							const errorField = document.querySelector(`input[name='${key}']`);
+							if (errorField && errorField.closest('.field_section') && errorField.closest('.field_section').querySelector('.error_message')) {
+								if(errorMessage == 'user account must be activated') {
+									errorMessage = activateErrorMessage;
+								}
+
+								errorField.closest('.field_section').querySelector('.error_message').innerHTML = errorMessage;
+							} else {
+								errorMessageField.innerText = errorMessage;
+							}
+						}
+					}
+				}
+			});
+			// submit end
+
+			function makeVisibleTextFieldsRequired() {
+				document.querySelectorAll('.text_field').forEach((field) => {
+					if (field.innerWidth > 0) {
+						field.setAttribute('required', true);
+					} else {
+						field.removeAttribute('required');
+					}
+				});
+			}
+
+			// view switch start
+			function getCurrentView() {
+				return userPageContainer.getAttribute("data-view");
+			}
+
+			function renderView(view) {
+				userPageContainer.setAttribute("data-view", view);
+				if (view == "login") {
+					document.title = "Sign In";
+					title.innerHTML = "Welcome <br>Back";
+					submitButtonText.innerHTML = "Sign In";
+				} else if (view == "signup") {
+					document.title = "Sign Up";
+					title.innerHTML = "Create <br>Account";
+					submitButtonText.innerHTML = "Sign Up";
+				} else if (view == "activate") {
+					document.title = "Activate Account";
+					title.innerHTML = "Activate <br>Account";
+					submitButtonText.innerHTML = "Activate";
+
+					successMessage.innerHTML = "Account activated successfully. You can now <a href='login.html' class='success_text_link'>sign in</a>";
+				} else if (view == "reset") {
+					document.title = "Reset Password";
+					title.innerHTML = "Reset <br>Password";
+					submitButtonText.innerHTML = "Reset Password";
+
+					const urlParams = new URLSearchParams(window.location.search);
+					const resetToken = urlParams.get('reset_token');	
+					if (resetToken) {
+						resetTokenField.value = resetToken;
+					} else {
+						alert("Reset token not found, Please check your email and click on the reset link again");
+					}
+
+				} else if (view == "forgot") {
+					document.title = "Forgot Password";
+					title.innerHTML = "Forgot <br>Password";
+					submitButtonText.innerHTML = "Send Reset Link";
+				} else if (view == "request_activation") {
+					document.title = "Request Activation";
+					title.innerHTML = "Request <br>Activation";
+					submitButtonText.innerHTML = "Request Activation";
+				}
+
+				makeVisibleTextFieldsRequired();
+			}
+			// view switch end
+
+			if (window.location.pathname.includes("login")) {
+				renderView("login");
+			} else if (window.location.pathname.includes("activate")) {
+				renderView("activate");
+
+				const urlParams = new URLSearchParams(window.location.search);
+				const activationCode = urlParams.get('activation_code');
+
+				if (activationCode) {
+					userActivationCodeField.value = activationCode;
+				}
+
+			} else if (window.location.pathname.includes("signup")) {
+				renderView("signup");
+			} else if (window.location.pathname.includes("reset")) {
+				renderView("reset");
+			} else if (window.location.pathname.includes("forgot")) {
+				renderView("forgot");
+			} else if (window.location.pathname.includes("request_activation")) {
+				renderView("request_activation");
+			} else {
+				renderView("login");
+			}
+
+		</script>
+	</body>
+{{end}}

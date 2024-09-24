@@ -1,0 +1,35 @@
+{{define "subject"}}Activate your account{{end}}
+
+{{define "plainBody"}}
+Hi,
+
+Please visit the following URL to activate your account:
+
+{{.baseURL}}activate.html?activation_code={{.activationToken}}
+
+Please note that the activation token will expire in 3 days.
+
+Thanks,
+
+{{end}}
+
+{{define "htmlBody"}}
+<!doctype html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+
+<body>
+	<p>Hi,</p>
+	<p>Please visit the following URL to activate your account:</p>
+	<p><a href="{{.baseURL}}activate.html?activation_code={{.activationToken}}">{{.baseURL}}activate.html?activation_code={{.activationToken}}</a></p>
+	<p>Please note that the activation token will expire in 3 days.</p>
+	<p>Thanks,</p>
+</body>
+
+</html>
+{{end}}
+

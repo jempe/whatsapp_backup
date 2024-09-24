@@ -8,10 +8,12 @@ import (
 
 	"github.com/jempe/whatsapp_backup/internal/data"
 	"github.com/jempe/whatsapp_backup/internal/validator"
+	"github.com/pgvector/pgvector-go"
 )
 
 func (app *application) createPhraseHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
+		Title        string `json:"title"`
 		Content      string `json:"content"`
 		Tokens       int    `json:"tokens"`
 		Sequence     int    `json:"sequence"`
@@ -26,6 +28,7 @@ func (app *application) createPhraseHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	phrase := &data.Phrase{
+		Title:        input.Title,
 		Content:      input.Content,
 		Tokens:       input.Tokens,
 		Sequence:     input.Sequence,
@@ -116,6 +119,7 @@ func (app *application) updatePhraseHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	var input struct {
+		Title        *string `json:"title"`
 		Content      *string `json:"content"`
 		Tokens       *int    `json:"tokens"`
 		Sequence     *int    `json:"sequence"`
@@ -129,18 +133,23 @@ func (app *application) updatePhraseHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if input.Content != nil {
-		phrase.Content = *input.Content
+	if input.Title != nil {
+		phrase.Title = *input.Title
 	}
 
 	if input.Tokens != nil {
 		phrase.Tokens = *input.Tokens
-	} else if input.Content != nil {
+	}
+
+	if input.Content != nil {
+		phrase.Content = *input.Content
+
 		countedTokens, err := app.countTokens(phrase.Content)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return
 		}
+
 		phrase.Tokens = countedTokens
 	}
 
@@ -206,16 +215,13 @@ func (app *application) deletePhraseHandler(w http.ResponseWriter, r *http.Reque
 
 func (app *application) listPhraseHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		ContentField string
-		MessageID    int64
+		MessageID int64
 		data.Filters
 	}
 
 	v := validator.New()
 
 	qs := r.URL.Query()
-
-	input.ContentField = app.readString(qs, "content_field", "")
 
 	input.MessageID = app.readInt64(qs, "message_id", 0, v)
 
@@ -225,10 +231,8 @@ func (app *application) listPhraseHandler(w http.ResponseWriter, r *http.Request
 	input.Filters.Sort = app.readString(qs, "sort", "id")
 	input.Filters.SortSafelist = []string{
 		"id",
-		"content_field",
 		"message_id",
 		"-id",
-		"-content_field",
 		"-message_id",
 	}
 
@@ -238,7 +242,6 @@ func (app *application) listPhraseHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	phrases, metadata, err := app.models.Phrases.GetAll(
-		input.ContentField,
 		input.MessageID,
 		input.Filters)
 	if err != nil {
@@ -251,3 +254,92 @@ func (app *application) listPhraseHandler(w http.ResponseWriter, r *http.Request
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+// list_phrase_semantic_start
+func (app *application) listPhraseSemanticHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Search             string
+		Similarity         float64
+		EmbeddingsProvider string
+		ContentFields      []string
+		MessageID          int64
+		data.Filters
+	}
+
+	v := validator.New()
+
+	qs := r.URL.Query()
+
+	defaultEmbeddingsProvider := app.config.embeddings.defaultProvider
+
+	input.Search = app.readString(qs, "search", "")
+	input.Similarity = app.readFloat(qs, "similarity", 0.7, v)
+	input.EmbeddingsProvider = app.readString(qs, "embeddings-provider", defaultEmbeddingsProvider)
+
+	input.ContentFields = app.readCSV(qs, "content_fields", []string{})
+
+	//Additional Semantic Search Filters
+	input.MessageID = app.readInt64(qs, "generic_item_id", 0, v)
+
+	input.Filters.Page = app.readInt(qs, "page", 1, v)
+	input.Filters.PageSize = app.readInt(qs, "page_size", 5, v)
+
+	input.Filters.Sort = app.readString(qs, "sort", "id")
+	input.Filters.SortSafelist = []string{
+		"id",
+		"-id",
+	}
+
+	if input.Search == "" {
+		app.serverErrorResponse(w, r, errors.New("missing required search parameter"))
+		return
+	}
+
+	if !(input.EmbeddingsProvider == "sentence-transformers" || input.EmbeddingsProvider == "openai" || input.EmbeddingsProvider == "google") {
+		app.serverErrorResponse(w, r, errors.New("invalid embeddings provider"))
+		return
+	}
+
+	if data.ValidateFilters(v, input.Filters); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	searchInput := []string{
+		input.Search,
+	}
+
+	var embeddings [][]float32
+	var err error
+	if input.EmbeddingsProvider == "sentence-transformers" {
+		embeddings, err = app.fetchSentenceTransformersEmbeddings(searchInput)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+	}
+
+	if len(embeddings) == 0 {
+		app.serverErrorResponse(w, r, errors.New("no embeddings returned"))
+		return
+	}
+
+	phrases, metadata, err := app.models.Phrases.GetAllSemantic(
+		pgvector.NewVector(embeddings[0]),
+		input.Similarity,
+		input.EmbeddingsProvider,
+		input.ContentFields,
+		input.MessageID,
+		input.Filters)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"phrases": phrases, "metadata": metadata}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+//list_phrase_semantic_end

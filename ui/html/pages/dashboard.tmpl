@@ -1,0 +1,21 @@
+{{define "styles"}}
+<style>
+</style>
+{{end}}
+
+
+{{define "body"}}
+<body class="body">
+	{{template "sidebar" .}}
+	<main class="main">
+		{{template "header" .}}
+		<!--dashboard_content-->
+	</main>
+
+	<script>
+		if (!authToken) {
+			gotoLogin();
+		}
+	</script>
+</body>
+{{end}}

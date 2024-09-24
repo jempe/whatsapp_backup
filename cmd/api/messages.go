@@ -17,8 +17,8 @@ func (app *application) createMessageHandler(w http.ResponseWriter, r *http.Requ
 		Message              string    `json:"message"`
 		PhoneNumber          string    `json:"phone_number"`
 		Attachment           string    `json:"attachment"`
-		EnableSemanticSearch bool      `json:"enable_semantic_search"`
 		ChatID               int64     `json:"chat_id"`
+		EnableSemanticSearch bool      `json:"enable_semantic_search"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -32,8 +32,8 @@ func (app *application) createMessageHandler(w http.ResponseWriter, r *http.Requ
 		Message:              input.Message,
 		PhoneNumber:          input.PhoneNumber,
 		Attachment:           input.Attachment,
-		EnableSemanticSearch: input.EnableSemanticSearch,
 		ChatID:               input.ChatID,
+		EnableSemanticSearch: input.EnableSemanticSearch,
 	}
 
 	v := validator.New()
@@ -113,8 +113,8 @@ func (app *application) updateMessageHandler(w http.ResponseWriter, r *http.Requ
 		Message              *string    `json:"message"`
 		PhoneNumber          *string    `json:"phone_number"`
 		Attachment           *string    `json:"attachment"`
-		EnableSemanticSearch *bool      `json:"enable_semantic_search"`
 		ChatID               *int64     `json:"chat_id"`
+		EnableSemanticSearch *bool      `json:"enable_semantic_search"`
 	}
 
 	err = app.readJSON(w, r, &input)
@@ -139,12 +139,12 @@ func (app *application) updateMessageHandler(w http.ResponseWriter, r *http.Requ
 		message.Attachment = *input.Attachment
 	}
 
-	if input.EnableSemanticSearch != nil {
-		message.EnableSemanticSearch = *input.EnableSemanticSearch
-	}
-
 	if input.ChatID != nil {
 		message.ChatID = *input.ChatID
+	}
+
+	if input.EnableSemanticSearch != nil {
+		message.EnableSemanticSearch = *input.EnableSemanticSearch
 	}
 
 	v := validator.New()
@@ -204,7 +204,6 @@ func (app *application) listMessageHandler(w http.ResponseWriter, r *http.Reques
 	v := validator.New()
 
 	qs := r.URL.Query()
-
 	input.EnableSemanticSearch = app.readBool(qs, "enable_semantic_search", false)
 
 	input.Filters.Page = app.readInt(qs, "page", 1, v)
@@ -214,10 +213,8 @@ func (app *application) listMessageHandler(w http.ResponseWriter, r *http.Reques
 	input.Filters.SortSafelist = []string{
 		"id",
 		"message_date",
-		"enable_semantic_search",
 		"-id",
 		"-message_date",
-		"-enable_semantic_search",
 	}
 
 	if data.ValidateFilters(v, input.Filters); !v.Valid() {
@@ -226,7 +223,6 @@ func (app *application) listMessageHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	messages, metadata, err := app.models.Messages.GetAll(
-		input.EnableSemanticSearch,
 		input.Filters)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)

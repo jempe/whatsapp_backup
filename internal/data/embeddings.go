@@ -7,6 +7,8 @@ func getEmbeddingsField(provider string) (embeddingsField string, err error) {
 		return "st_embeddings", nil
 	} else if provider == "openai" {
 		return "openai_embeddings", nil
+	} else if provider == "google" {
+		return "google_embeddings", nil
 	}
 
 	return "", fmt.Errorf("Unknown Embeddings provider %s", provider)

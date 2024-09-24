@@ -1,0 +1,171 @@
+{{define "header"}}
+<header class="header">
+	<a class="menu_button">
+		<span class="menu_button_line"></span>
+		<span class="menu_button_line"></span>
+		<span class="menu_button_line"></span>
+	</a>
+	<h1 class="header_title">{{.Title}}</h1>
+
+	<!--<span class="search_bar">
+		<input class="search_input" />
+		<span class="search_icon">
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="28"
+				height="28"
+				viewBox="0 0 28 28"
+				fill="none"
+			>
+				<g clip-path="url(#clip0_17_1076)">
+					<path
+						d="M15.7543 24.4959C8.99134 24.4959 3.50879 19.0134 3.50879 12.2504C3.50879 5.48732 8.99128 0.00488281 15.7543 0.00488281C22.5174 0.00488281 27.9999 5.48738 27.9999 12.2504C27.9999 19.0135 22.5174 24.4959 15.7543 24.4959ZM15.7543 3.50363C10.9236 3.50363 7.00754 7.41969 7.00754 12.2504C7.00754 17.0812 10.9236 20.9973 15.7543 20.9973C20.5851 20.9973 24.5012 17.0812 24.5012 12.2504C24.5012 7.41969 20.585 3.50363 15.7543 3.50363Z"
+						class="sidebar_icon_color"
+					/>
+					<path
+						d="M1.75951 27.9948C1.29451 27.9975 0.847591 27.8149 0.517469 27.4874C-0.168521 26.8071 -0.173043 25.6995 0.50734 25.0135C0.510716 25.0101 0.514093 25.0067 0.517469 25.0034L7.09506 18.4258C7.80517 17.7398 8.93693 17.7594 9.62292 18.4695C10.3089 19.1796 10.2893 20.3114 9.57921 20.9973L3.00155 27.4874C2.67143 27.8149 2.22452 27.9975 1.75951 27.9948Z"
+						class="sidebar_icon_color"
+					/>
+				</g>
+				<defs>
+					<clipPath id="clip0_17_1076">
+						<rect width="28" height="28" class="white_icon" />
+					</clipPath>
+				</defs>
+			</svg>
+		</span>
+	</span>
+
+	<span class="icon_menu">
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="28"
+			height="28"
+			viewBox="0 0 28 28"
+			fill="none"
+		>
+			<g clip-path="url(#clip0_17_1097)">
+				<path
+					d="M22.5677 26.5203C22.8078 26.5203 23.0447 26.6117 23.2249 26.7857C24.3769 27.8981 26.0572 28.2684 27.551 27.8048C26.5896 25.8021 26.4564 23.5076 27.2014 21.3832C28.1259 18.7399 28.3576 16.0906 27.3054 13.4335C26.381 11.0993 24.5971 9.16006 22.3394 8.0542C22.4783 8.79467 22.5483 9.54915 22.5483 10.3116C22.5484 13.5479 21.3039 16.5917 19.0444 18.8824C16.7846 21.1734 13.7553 22.4616 10.5147 22.5098C9.91264 22.5192 9.31328 22.4838 8.7207 22.4057C10.5017 25.5275 13.8606 27.5607 17.5516 27.6154C19.1662 27.6404 20.7166 27.3021 22.1604 26.6126C22.2904 26.5505 22.4296 26.5203 22.5677 26.5203Z"
+					class="white_icon"
+				/>
+				<path
+					d="M10.5409 0.0025456C4.79219 -0.111603 0.0134043 4.53903 -0.00045711 10.2865C-0.00385315 11.6907 0.270256 13.0522 0.814315 14.3333C0.822216 14.3519 0.829563 14.3708 0.836216 14.3899C1.5812 16.5144 1.44806 18.8088 0.486632 20.8116C1.98054 21.275 3.66068 20.9048 4.8127 19.7924C5.09651 19.5182 5.52116 19.4492 5.87726 19.6194C7.32085 20.3089 8.87138 20.6482 10.486 20.6223C16.1897 20.5376 20.6576 16.0087 20.6575 10.3119C20.6576 4.7394 16.1192 0.114684 10.5409 0.0025456ZM4.81894 11.8519C3.99301 11.8519 3.32343 11.1834 3.32343 10.3589C3.32343 9.53433 3.99301 8.86586 4.81894 8.86586C5.64487 8.86586 6.31444 9.53433 6.31444 10.3589C6.31437 11.1834 5.64487 11.8519 4.81894 11.8519ZM10.3286 11.8519C9.50263 11.8519 8.83306 11.1834 8.83306 10.3589C8.83306 9.53433 9.50263 8.86586 10.3286 8.86586C11.1545 8.86586 11.8241 9.53433 11.8241 10.3589C11.8241 11.1834 11.1545 11.8519 10.3286 11.8519ZM15.8383 11.8519C15.0123 11.8519 14.3427 11.1834 14.3427 10.3589C14.3427 9.53433 15.0123 8.86586 15.8383 8.86586C16.6642 8.86586 17.3338 9.53433 17.3338 10.3589C17.3338 11.1834 16.6642 11.8519 15.8383 11.8519Z"
+					class="white_icon"
+				/>
+			</g>
+			<defs>
+				<clipPath id="clip0_17_1097">
+					<rect width="28" height="28" class="white_icon" />
+				</clipPath>
+			</defs>
+		</svg>
+	</span>
+	<span class="icon_menu">
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="28"
+			height="28"
+			viewBox="0 0 28 28"
+			fill="none"
+		>
+			<g clip-path="url(#clip0_17_1089)">
+				<path
+					d="M10.4526 25.668C11.0608 27.0355 12.4092 27.9998 14.0008 27.9998C15.5923 27.9998 16.9408 27.0355 17.549 25.668C16.4267 25.7229 15.2597 25.7598 14.0008 25.7598C12.7419 25.7598 11.5749 25.7228 10.4526 25.668Z"
+					class="white_icon"
+				/>
+				<path
+					d="M26.3532 19.74C24.877 17.8785 22.3996 14.2195 22.3996 10.64C22.3996 7.09073 20.1193 3.89758 16.7996 2.72382C16.7593 1.21406 15.5183 0 14.0007 0C12.482 0 11.2422 1.21406 11.2018 2.72382C7.88101 3.89758 5.6007 7.09073 5.6007 10.64C5.6007 14.2207 3.1244 17.8785 1.64712 19.74C1.15433 20.3616 1.00197 21.1825 1.24058 21.9363C1.47354 22.6721 2.05367 23.2422 2.79288 23.4595C4.08761 23.8415 6.20997 24.2715 9.44682 24.491C10.8479 24.5851 12.3543 24.64 14.0008 24.64C15.646 24.64 17.1525 24.5851 18.5535 24.491C21.7915 24.2715 23.9128 23.8415 25.2086 23.4595C25.9478 23.2422 26.5268 22.6722 26.7598 21.9363C26.9983 21.1825 26.8449 20.3616 26.3532 19.74Z"
+					class="white_icon"
+				/>
+			</g>
+			<defs>
+				<clipPath id="clip0_17_1089">
+					<rect width="28" height="28" class="white_icon" />
+				</clipPath>
+			</defs>
+		</svg>
+	</span>-->
+	<span class="header_profile">
+		<span class="header_profile_picture">
+		</span>
+		<span class="header_account">
+			<span class="header_user_name">User</span>
+			<a class="header_logout_link" href="javascript:void(0)">Logout</a>
+		</span>
+	</span>
+</header>
+<script>
+const headerLogoutLink = document.querySelector('.header_logout_link');
+
+headerLogoutLink.addEventListener('click', () => {
+	//TODO send logout request
+	deleteAuthCookie();
+	gotoLogin();
+});
+</script>
+<style>
+.menu_button {
+	width: 30px;
+	height: 22px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	cursor: pointer;
+	row-gap: 5px;
+	padding: 10px;
+}
+
+.menu_button_line {
+	width: 100%;
+	height: 4px;
+	background-color: var(--accent-color);
+	transition: all 0.3s ease;
+	border-radius: 2px;
+}
+
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.header_title {
+	font-size: 1.6rem;
+	font-family: var(--primary-font);
+	color: var(--text-color);
+	margin: 0;
+}
+
+.header_profile {
+	display: flex;
+	column-gap: 20px;
+}
+
+.header_profile_picture {
+	height: 60px;
+	display: block;
+	width: 60px;
+	background-color: var(--primary-color);
+	border-radius: 50%;
+}
+.header_account {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	row-gap: 10px;
+}
+
+.header_user_name {
+	font-size: 0.8rem;
+	font-family: var(--primary-font);
+}
+
+.header_logout_link {
+	font-size: 0.85rem;
+	text-decoration: underline;
+	color: var(--secondary-color);
+	font-family: var(--primary-font);
+}
+</style>
+{{end}}

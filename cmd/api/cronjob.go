@@ -8,122 +8,116 @@ import (
 	"github.com/pgvector/pgvector-go"
 )
 
-func (app *application) runCronJob() {
+func (app *application) runCronJob() error {
 	app.logger.PrintInfo("starting the cron job", nil)
 
 	var embeddingsProviders []string
-
-	if app.config.sentenceTransformersEnable {
+	if app.config.embeddings.sentenceTransformersServerURL != "" {
 		embeddingsProviders = append(embeddingsProviders, "sentence-transformers")
-	}
-
-	if app.config.openAIApiKey != "" {
-		embeddingsProviders = append(embeddingsProviders, "openai")
 	}
 
 	maxTokens := 200
 
-	itemsPerBatch := app.config.embeddingsPerBatch
+	itemsPerBatch := app.config.embeddings.embeddingsPerBatch
 
-	if len(embeddingsProviders) > 0 {
+	if len(embeddingsProviders) == 0 {
+		return fmt.Errorf("No embeddings providers configured", nil)
+	}
 
-		filter := data.Filters{
-			Page:     1,
-			PageSize: itemsPerBatch,
-			Sort:     "-id",
-			SortSafelist: []string{
-				"-id",
-			},
-		}
+	filter := data.Filters{
+		Page:     1,
+		PageSize: itemsPerBatch,
+		Sort:     "-id",
+		SortSafelist: []string{
+			"-id",
+		},
+	}
 
-		messages, metadata, err := app.models.Messages.GetAllNotInSemantic(filter)
+	var fields []string
+
+	fields = []string{
+		"messages.message",
+	}
+
+	for _, field := range fields {
+
+		messages, metadata, err := app.models.Messages.GetAllNotInSemantic(filter, field)
 		if err != nil {
-			app.logger.PrintError(err, nil)
-			return
+			return err
 		}
 
 		app.logger.PrintInfo("Messages to process", map[string]string{
+			"field":      field,
 			"total":      strconv.Itoa(metadata.TotalRecords),
 			"processing": strconv.Itoa(len(messages)),
 		})
 
 		for _, message := range messages {
 
-			fields := []string{
-				"messages.message",
+			content := ""
+
+			switch field {
+			case "messages.message":
+				content = message.Message
 			}
 
-			for _, field := range fields {
-				content := ""
+			titleField := message.Message
 
-				switch field {
-				case "messages.message":
-					content = message.Message
+			if content != "" {
+				countedTokens, err := app.countTokens(content)
+				if err != nil {
+					return err
 				}
 
-				if content != "" {
-					countedTokens, err := app.countTokens(content)
+				var parts []string
+				var partsErr error
+
+				if countedTokens < maxTokens {
+					parts = []string{content}
+				} else {
+					parts, partsErr = app.splitText(content, maxTokens)
+					if partsErr != nil {
+						return partsErr
+					}
+				}
+
+				for seq, part := range parts {
+
+					countedTokens, err := app.countTokens(part)
 					if err != nil {
-						app.logger.PrintError(err, nil)
-						return
+						return err
 					}
 
-					if countedTokens < maxTokens {
+					phrasePart := &data.Phrase{
+						Title:        titleField,
+						Content:      part,
+						Tokens:       countedTokens,
+						Sequence:     seq + 1,
+						MessageID:    message.ID,
+						ContentField: field,
+					}
 
-						phrase := &data.Phrase{
-							Content:      content,
-							Tokens:       countedTokens,
-							Sequence:     1,
-							MessageID:    message.ID,
-							ContentField: field,
-						}
-
-						err := app.models.Phrases.Insert(phrase)
-						if err != nil {
-							app.logger.PrintError(err, nil)
-							return
-						}
+					if countedTokens > app.config.embeddings.maxTokens {
+						return fmt.Errorf("Document of Message %d has too many tokens %d, sequence: %d", message.ID, countedTokens, seq)
 					} else {
-						parts, partsErr := app.splitText(content, maxTokens)
-						if partsErr != nil {
-							app.logger.PrintError(partsErr, nil)
-							return
-						}
-
-						for seq, part := range parts {
-
-							countedTokens, err := app.countTokens(part)
-							if err != nil {
-								app.logger.PrintError(err, nil)
-								return
-							}
-
-							phrasePart := &data.Phrase{
-								Content:      part,
-								Tokens:       countedTokens,
-								Sequence:     seq + 1,
-								MessageID:    message.ID,
-								ContentField: field,
-							}
-
-							err = app.models.Phrases.Insert(phrasePart)
-							if err != nil {
-								app.logger.PrintError(err, nil)
-								return
-							}
+						err = app.models.Phrases.Insert(phrasePart)
+						if err != nil {
+							return err
 						}
 					}
 				}
+			} else {
+				app.logger.PrintInfo("No content to process", map[string]string{
+					"message_id": strconv.Itoa(int(message.ID)),
+				})
 			}
 		}
-
 	}
 
 	for _, provider := range embeddingsProviders {
 		phrases, metadata, err := app.models.Phrases.GetAllWithoutEmbeddings(itemsPerBatch, provider)
 		if err != nil {
-			app.logger.PrintError(err, nil)
-			return
+			return err
 		}
 
 		app.logger.PrintInfo("Phrases to process", map[string]string{
@@ -142,21 +136,12 @@ func (app *application) runCronJob() {
 		}
 
 		var embeddings [][]float32
-
 		if provider == "sentence-transformers" {
 			embeddings, err = app.fetchSentenceTransformersEmbeddings(embeddingsContent)
+		}
 
-			if err != nil {
-				app.logger.PrintError(err, nil)
-				return
-			}
-		} else if provider == "openai" {
-			embeddings, err = fetchOpenaiEmbeddings(embeddingsContent, app.config.openAIApiKey)
-
-			if err != nil {
-				app.logger.PrintError(err, nil)
-				return
-			}
+		if err != nil {
+			return err
 		}
 
 		app.logger.PrintInfo(fmt.Sprintf("Embeddings fetched from %s", provider), map[string]string{
@@ -166,6 +151,7 @@ func (app *application) runCronJob() {
 		for i, phrase := range phrases {
 			app.models.Phrases.UpdateEmbedding(phrase, pgvector.NewVector(embeddings[i]), provider)
 		}
-
 	}
+	return nil
+
 }

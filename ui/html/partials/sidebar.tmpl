@@ -1,0 +1,62 @@
+{{define "sidebar"}}
+    <style>
+	.sidebar {
+		border-radius: 2px;
+		background: var(--accent-color);
+		padding: 40px 0 20px 40px;
+		width: 250px;
+	}
+
+	.sidebar_item {
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		padding-left: 33px;
+		column-gap: 45px;
+		width: 302px;
+		height: 80px;
+	}
+
+	.sidebar_items {
+		display: flex;
+		flex-direction: column;
+		row-gap: 10px;
+	}
+
+	.sidebar_link {
+		display: flex;
+		justify-content: flex-start;
+		align-items: center;
+		color: var(--alt-text-color);
+		font-family: Roboto, sans-serif;
+		font-size: 1.1rem;
+		column-gap: 10px;
+		text-decoration: none;
+	}
+
+	.sidebar_item_icon {
+		fill: var(--alt-text-color);
+	}
+    </style>
+    <aside class="sidebar">
+                <section class="sidebar_items">
+	
+		<a class="sidebar_link" href="messages.html">
+			<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="sidebar_item_icon"><path d="m160-800 80 160h120l-80-160h80l80 160h120l-80-160h80l80 160h120l-80-160h120q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800Zm0 240v320h640v-320H160Zm0 0v320-320Z"/></svg>
+			<span class="sidebar_text">Messages</span>
+                    </a>
+	
+		<a class="sidebar_link" href="chats.html">
+			<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="sidebar_item_icon"><path d="m160-800 80 160h120l-80-160h80l80 160h120l-80-160h80l80 160h120l-80-160h120q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800Zm0 240v320h640v-320H160Zm0 0v320-320Z"/></svg>
+			<span class="sidebar_text">Chats</span>
+                    </a>
+	
+		<a class="sidebar_link" href="phrases.html">
+			<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="sidebar_item_icon"><path d="m160-800 80 160h120l-80-160h80l80 160h120l-80-160h80l80 160h120l-80-160h120q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800Zm0 240v320h640v-320H160Zm0 0v320-320Z"/></svg>
+			<span class="sidebar_text">Phrases</span>
+                    </a>
+	
+                </section>
+            </aside>
+{{end}}
+

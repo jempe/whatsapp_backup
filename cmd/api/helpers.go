@@ -2,14 +2,13 @@ package main
 
 import (
 	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"os/exec"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -70,6 +69,20 @@ func (app *application) readCSV(qs url.Values, key string, defaultValue []string
 	}
 
 	return strings.Split(csv, ",")
+}
+
+func (app *application) writeCSV(w http.ResponseWriter, status int, data [][]string, headers http.Header) error {
+	for key, value := range headers {
+		w.Header()[key] = value
+	}
+
+	w.Header().Set("Content-Type", "text/csv")
+	w.WriteHeader(status)
+
+	csvWriter := csv.NewWriter(w)
+	csvWriter.WriteAll(data)
+
+	return nil
 }
 
 func (app *application) readInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int {
@@ -194,80 +207,48 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 	return nil
 }
 
-// runCommandWithInput executes a shell command, sends input via stdin, and checks its return status.
-func (app *application) runCommandWithInput(command string, args []string, input string) (string, error) {
-	// Define the command that we want to run
-	var allowedCommands = []string{
-		app.config.scriptsPath.pythonBinary,
-	}
+func (app *application) background(fn func()) {
+	app.wg.Add(1)
 
-	var allowedPaths = []string{
-		app.config.scriptsPath.path,
-	}
+	go func() {
+		defer app.wg.Done()
 
-	// Check if the command is allowed
-	for _, allowedCommand := range allowedCommands {
-		if command != allowedCommand {
-			return "", fmt.Errorf("forbidden command: %s", command)
-		}
-	}
+		defer func() {
+			if err := recover(); err != nil {
+				recoverError := fmt.Errorf("%v", err)
 
-	if len(args) > 0 {
-		firstArg := args[0]
-
-		path, err := filepath.Abs(firstArg)
-		if err != nil {
-			return "", fmt.Errorf("failed to get absolute path: %w", err)
-		}
-
-		// Check if the path is allowed
-		for _, allowedPath := range allowedPaths {
-
-			allowedFullPath, err := filepath.Abs(allowedPath)
-			if err != nil {
-				return "", fmt.Errorf("failed to get absolute path: %w", err)
+				app.logger.PrintError(recoverError, nil)
 			}
+		}()
 
-			if !strings.HasPrefix(path, allowedFullPath) {
-				return "", fmt.Errorf("forbidden path: %s", path)
-			}
-		}
+		fn()
+	}()
+}
+
+func (app *application) render(w http.ResponseWriter, r *http.Request, status int, page string, data templateData) {
+	ts, ok := app.templateCache[page]
+	if !ok {
+		err := fmt.Errorf("the template %s does not exist", page)
+		app.logger.PrintError(err, nil)
+		return
 	}
 
-	cmd := exec.Command(command, args...)
+	buf := new(bytes.Buffer)
 
-	// Set up stdin, stdout, and stderr pipes
-	stdin, err := cmd.StdinPipe()
+	err := ts.ExecuteTemplate(buf, "base", data)
 	if err != nil {
-		return "", fmt.Errorf("failed to create stdin pipe: %w", err)
-	}
-	defer stdin.Close()
-
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-
-	// Start the command
-	if err := cmd.Start(); err != nil {
-		return "", fmt.Errorf("failed to start command: %w", err)
+		app.logger.PrintError(err, nil)
+		return
 	}
 
-	// Send input via stdin
-	if _, err := io.WriteString(stdin, input); err != nil {
-		return "", fmt.Errorf("failed to write to stdin: %w", err)
-	}
-	stdin.Close()
+	w.WriteHeader(status)
 
-	// Wait for the command to finish and check the exit status
-	if err := cmd.Wait(); err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			// Non-zero exit code indicates an error
-			return stdout.String(), fmt.Errorf("command failed with exit code %d: %s", exitErr.ExitCode(), stderr.String())
-		} else {
-			return stdout.String(), fmt.Errorf("command failed: %w", err)
-		}
-	}
+	buf.WriteTo(w)
+}
 
-	// Successful execution
-	return stdout.String(), nil
+func (app *application) newTemplateData(r *http.Request) templateData {
+	return templateData{
+		IsAuthenticated: false,
+		BaseURL:         app.config.site.baseURL,
+	}
 }

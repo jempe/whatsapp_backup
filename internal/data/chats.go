@@ -12,8 +12,8 @@ type Chat struct {
 	ID         int64     `json:"id,omitempty" db:"id"`
 	Name       string    `json:"name,omitempty" db:"name"`
 	Version    int32     `json:"version,omitempty" db:"version"`
-	CreatedAt  time.Time `json:"-" db:"created_at"`
-	ModifiedAt time.Time `json:"-" db:"modified_at"`
+	CreatedAt  time.Time `json:"created_at" db:"created_at"`
+	ModifiedAt time.Time `json:"modified_at" db:"modified_at"`
 }
 
 type ChatModel struct {

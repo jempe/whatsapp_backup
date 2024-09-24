@@ -1,0 +1,18 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html>
+	<head>
+		<base href="{{.BaseURL}}">
+		<title>{{.Title}}</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+        	{{template "font-faces" .}}
+        	{{template "common_styles" .}}
+		{{template "styles" .}}
+
+		{{template "common_scripts" .}}
+	</head>
+	{{template "body" .}}
+</html>
+{{end}}
+

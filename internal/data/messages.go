@@ -14,11 +14,11 @@ type Message struct {
 	Message              string    `json:"message,omitempty" db:"message"`
 	PhoneNumber          string    `json:"phone_number,omitempty" db:"phone_number"`
 	Attachment           string    `json:"attachment,omitempty" db:"attachment"`
-	EnableSemanticSearch bool      `json:"enable_semantic_search,omitempty" db:"enable_semantic_search"`
 	ChatID               int64     `json:"chat_id,omitempty" db:"chat_id"`
+	EnableSemanticSearch bool      `json:"enable_semantic_search,omitempty" db:"enable_semantic_search"`
 	Version              int32     `json:"version,omitempty" db:"version"`
-	CreatedAt            time.Time `json:"-" db:"created_at"`
-	ModifiedAt           time.Time `json:"-" db:"modified_at"`
+	CreatedAt            time.Time `json:"created_at" db:"created_at"`
+	ModifiedAt           time.Time `json:"modified_at" db:"modified_at"`
 }
 
 type MessageModel struct {
@@ -32,16 +32,16 @@ func (m MessageModel) Insert(message *Message) error {
 			message,
 			phone_number,
 			attachment,
-			enable_semantic_search,
 			chat_id
+			, enable_semantic_search
 		)
 		VALUES (
 			$1,
 			$2,
 			$3,
 			$4,
-			$5,
-			$6
+			$5
+			, $6
 		)
 		RETURNING id, version, created_at, modified_at`
 
@@ -50,8 +50,8 @@ func (m MessageModel) Insert(message *Message) error {
 		message.Message,
 		message.PhoneNumber,
 		message.Attachment,
-		message.EnableSemanticSearch,
 		message.ChatID,
+		message.EnableSemanticSearch,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -71,8 +71,8 @@ func (m MessageModel) Get(id int64) (*Message, error) {
 		message,
 		phone_number,
 		attachment,
-		enable_semantic_search,
 		chat_id,
+		enable_semantic_search,
 		version, created_at, modified_at
 		FROM messages
 		WHERE id = $1`
@@ -88,8 +88,8 @@ func (m MessageModel) Get(id int64) (*Message, error) {
 		&message.Message,
 		&message.PhoneNumber,
 		&message.Attachment,
-		&message.EnableSemanticSearch,
 		&message.ChatID,
+		&message.EnableSemanticSearch,
 		&message.Version,
 		&message.CreatedAt,
 		&message.ModifiedAt,
@@ -115,8 +115,8 @@ func (m MessageModel) Update(message *Message) error {
 		message = $2,
 		phone_number = $3,
 		attachment = $4,
-		enable_semantic_search = $5,
-		chat_id = $6,
+		chat_id = $5,
+		enable_semantic_search = $6,
 		version = version + 1
 		WHERE id = $7 AND version = $8
 		RETURNING version`
@@ -126,8 +126,8 @@ func (m MessageModel) Update(message *Message) error {
 		message.Message,
 		message.PhoneNumber,
 		message.Attachment,
-		message.EnableSemanticSearch,
 		message.ChatID,
+		message.EnableSemanticSearch,
 		message.ID,
 		message.Version,
 	}
@@ -177,27 +177,24 @@ func (m MessageModel) Delete(id int64) error {
 	return nil
 }
 
-func (m MessageModel) GetAll(enable_semantic_search bool, filters Filters) ([]*Message, Metadata, error) {
+func (m MessageModel) GetAll(filters Filters) ([]*Message, Metadata, error) {
 	query := fmt.Sprintf(`
 		SELECT COUNT(*) OVER(), id,
 		message_date,
 		message,
 		phone_number,
 		attachment,
-		enable_semantic_search,
 		chat_id,
+		enable_semantic_search,
 		version, created_at, modified_at
 		FROM messages
-		WHERE
-		(enable_semantic_search = $1 OR $1 = false)
 		ORDER BY %s %s, id ASC
-		LIMIT $2 OFFSET $3`, filters.sortColumn(), filters.sortDirection())
+		LIMIT $1 OFFSET $2`, filters.sortColumn(), filters.sortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	args := []any{
-		enable_semantic_search,
 		filters.limit(),
 		filters.offset(),
 	}
@@ -222,8 +219,8 @@ func (m MessageModel) GetAll(enable_semantic_search bool, filters Filters) ([]*M
 			&message.Message,
 			&message.PhoneNumber,
 			&message.Attachment,
-			&message.EnableSemanticSearch,
 			&message.ChatID,
+			&message.EnableSemanticSearch,
 			&message.Version,
 			&message.CreatedAt,
 			&message.ModifiedAt,
@@ -244,3 +241,65 @@ func (m MessageModel) GetAll(enable_semantic_search bool, filters Filters) ([]*M
 
 	return messages, metadata, nil
 }
+
+// not_in_semantic_start
+func (m MessageModel) GetAllNotInSemantic(filters Filters, contentField string) ([]*Message, Metadata, error) {
+	query := fmt.Sprintf(`
+		SELECT COUNT(*) OVER(), id,
+		message,
+		version, created_at, modified_at
+		FROM messages
+		WHERE
+		enable_semantic_search = true AND
+		%s != '' AND
+		id NOT IN (SELECT message_id FROM phrases WHERE content_field = '%s')
+		ORDER BY %s %s, id ASC
+		LIMIT $1 OFFSET $2`, contentField, contentField, filters.sortColumn(), filters.sortDirection())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	args := []any{
+		filters.limit(),
+		filters.offset(),
+	}
+
+	rows, err := m.DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+
+	defer rows.Close()
+
+	totalRecords := 0
+	messages := []*Message{}
+
+	for rows.Next() {
+		var message Message
+
+		err := rows.Scan(
+			&totalRecords,
+			&message.ID,
+			&message.Message,
+			&message.Version,
+			&message.CreatedAt,
+			&message.ModifiedAt,
+		)
+
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+
+		messages = append(messages, &message)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, Metadata{}, err
+	}
+
+	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
+
+	return messages, metadata, nil
+}
+
+//not_in_semantic_end

@@ -6,129 +6,53 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
+
+	"github.com/jempe/text_splitter/splitter"
+	"github.com/tiktoken-go/tokenizer"
 )
 
-type ContentTokens struct {
-	Content string `json:"content"`
-	Tokens  int    `json:"tokens"`
-}
-
-type openaiApiRequest struct {
-	Input []string `json:"input"`
-	Model string   `json:"model"`
-}
-
 func (app *application) countTokens(input string) (tokens int, err error) {
-	var tokensJSON struct {
-		Tokens int `json:"num_tokens"`
-	}
+	model := "gpt-3.5-turbo"
 
-	command := app.config.scriptsPath.pythonBinary
-	commandArgs := []string{app.config.scriptsPath.path + "/python/count_tokens.py"}
-
-	var output string
-
-	output, err = app.runCommandWithInput(command, commandArgs, input)
+	codec, err := tokenizer.ForModel(tokenizer.Model(model))
 	if err != nil {
 		return 0, err
-	} else {
-		//TODO unify the error handling with readJSON helper
-		dec := json.NewDecoder(strings.NewReader(output))
-		dec.DisallowUnknownFields()
-
-		err = dec.Decode(&tokensJSON)
-		if err != nil {
-			return 0, err
-		}
-
-		return tokensJSON.Tokens, nil
 	}
+
+	ids, _, err := codec.Encode(input)
+	if err != nil {
+		return 0, err
+	}
+
+	return len(ids), nil
 }
 
 func (app *application) splitText(input string, tokenLimit int) (output []string, err error) {
 
-	partLength := tokenLimit * 5
+	delimiters := []rune{' ', '\n', '\t'}
 
-	if len(input) < partLength {
-		output = append(output, input)
-		return output, nil
-	}
+	chunks := splitter.SplitTextInChunks(input, tokenLimit*5, tokenLimit, delimiters)
 
-	inputParts := []string{}
-
-	currentPosition := 0
-
-	for currentPosition < len(input) {
-		if currentPosition+partLength > len(input) {
-			inputParts = append(inputParts, input[currentPosition:])
-			currentPosition = len(input)
-		} else {
-			firstSpaceAfterLength := strings.Index(input[currentPosition+partLength:], " ")
-			firstSpaceBeforeLength := strings.LastIndex(input[0:currentPosition+partLength], " ")
-
-			if firstSpaceAfterLength != -1 {
-				inputParts = append(inputParts, input[currentPosition:currentPosition+partLength+firstSpaceAfterLength])
-				currentPosition += partLength + firstSpaceAfterLength + 1
-			} else if firstSpaceBeforeLength != -1 {
-				inputParts = append(inputParts, input[0:firstSpaceBeforeLength])
-				currentPosition += firstSpaceBeforeLength + 1
-			} else {
-				inputParts = append(inputParts, input[currentPosition:])
-				currentPosition += len(input[currentPosition:])
-			}
-		}
-	}
-
-	return inputParts, nil
+	return chunks, nil
 }
-
 func (app *application) fetchSentenceTransformersEmbeddings(input []string) ([][]float32, error) {
 	if len(input) == 0 {
 		return nil, fmt.Errorf("No input provided")
 	}
 
-	var embeddingsJSON struct {
+	var data struct {
+		Documents []string `json:"documents"`
+	}
+
+	var result struct {
 		Embeddings [][]float32 `json:"embeddings"`
-		Error      string      `json:"error"`
-		Message    string      `json:"message"`
 	}
 
-	command := app.config.scriptsPath.pythonBinary
-	commandArgs := []string{app.config.scriptsPath.path + "/python/fetch_st_embeddings.py"}
-
-	inputJSON, err := json.Marshal(input)
-	if err != nil {
-		return nil, err
+	for _, item := range input {
+		data.Documents = append(data.Documents, item)
 	}
 
-	output, err := app.runCommandWithInput(command, commandArgs, string(inputJSON))
-	if err != nil {
-		return nil, err
-	} else {
-		//TODO unify the error handling with readJSON helper
-		dec := json.NewDecoder(strings.NewReader(output))
-		dec.DisallowUnknownFields()
-
-		err = dec.Decode(&embeddingsJSON)
-		if err != nil {
-			return nil, err
-		}
-
-		return embeddingsJSON.Embeddings, nil
-	}
-}
-
-func fetchOpenaiEmbeddings(input []string, apiKey string) ([][]float32, error) {
-	if len(input) == 0 {
-		return nil, fmt.Errorf("No input provided")
-	}
-
-	url := "https://api.openai.com/v1/embeddings"
-	data := &openaiApiRequest{
-		Input: input,
-		Model: "text-embedding-ada-002",
-	}
+	url := fmt.Sprintf("%s/embedding", app.config.embeddings.sentenceTransformersServerURL)
 
 	b, err := json.Marshal(data)
 	if err != nil {
@@ -140,7 +64,6 @@ func fetchOpenaiEmbeddings(input []string, apiKey string) ([][]float32, error) {
 		return nil, err
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", apiKey))
 	req.Header.Add("Content-Type", "application/json")
 
 	client := &http.Client{}
@@ -153,20 +76,19 @@ func fetchOpenaiEmbeddings(input []string, apiKey string) ([][]float32, error) {
 	if resp.StatusCode != http.StatusOK {
 		apiErrorMessage, _ := ioutil.ReadAll(resp.Body)
 
-		return nil, fmt.Errorf("OpenAI API Bad status code: %d, message %s", resp.StatusCode, apiErrorMessage)
+		return nil, fmt.Errorf("Sentence Transformers Bad status code: %d, message %s", resp.StatusCode, apiErrorMessage)
 	}
 
-	var result map[string]interface{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		return nil, err
 	}
 
 	var embeddings [][]float32
-	for _, item := range result["data"].([]interface{}) {
+	for _, item := range result.Embeddings {
 		var embedding []float32
-		for _, v := range item.(map[string]interface{})["embedding"].([]interface{}) {
-			embedding = append(embedding, float32(v.(float64)))
+		for _, v := range item {
+			embedding = append(embedding, v)
 		}
 		embeddings = append(embeddings, embedding)
 	}
