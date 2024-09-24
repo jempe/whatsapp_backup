@@ -12,15 +12,15 @@ import (
 )
 
 type Phrase struct {
-	ID           int64     `json:"id,omitempty" db:"id"`
-	MessageID    int64     `json:"message_id,omitempty" db:"message_id"`
-	Title        string    `json:"title,omitempty" db:"title"`
-	Similarity   float64   `json:"similarity,omitempty" db:"similarity"`
-	Content      string    `json:"content,omitempty" db:"content"`
-	Tokens       int       `json:"tokens,omitempty" db:"tokens"`
-	Sequence     int       `json:"sequence,omitempty" db:"sequence"`
-	ContentField string    `json:"content_field,omitempty" db:"content_field"`
-	Version      int32     `json:"version,omitempty" db:"version"`
+	ID           int64     `json:"id" db:"id"`
+	MessageID    int64     `json:"message_id" db:"message_id"`
+	Title        string    `json:"title" db:"title"`
+	Similarity   float64   `json:"similarity" db:"similarity"`
+	Content      string    `json:"content" db:"content"`
+	Tokens       int       `json:"tokens" db:"tokens"`
+	Sequence     int       `json:"sequence" db:"sequence"`
+	ContentField string    `json:"content_field" db:"content_field"`
+	Version      int32     `json:"version" db:"version"`
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 	ModifiedAt   time.Time `json:"modified_at" db:"modified_at"`
 }
@@ -53,7 +53,14 @@ func (m PhraseModel) Insert(phrase *Phrase) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel() // releases resources if slowOperation completes before timeout elapses, prevents memory leak
 
-	return m.DB.QueryRowContext(ctx, query, args...).Scan(&phrase.ID, &phrase.Version, &phrase.CreatedAt, &phrase.ModifiedAt)
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&phrase.ID, &phrase.Version, &phrase.CreatedAt, &phrase.ModifiedAt)
+
+	if err != nil {
+		return phraseCustomError(err)
+	}
+
+	return nil
+
 }
 
 func (m PhraseModel) Get(id int64) (*Phrase, error) {
@@ -129,11 +136,10 @@ func (m PhraseModel) Update(phrase *Phrase) error {
 
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&phrase.Version)
 	if err != nil {
-		switch {
-		case errors.Is(err, sql.ErrNoRows):
+		if errors.Is(err, sql.ErrNoRows) {
 			return ErrEditConflict
-		default:
-			return err
+		} else {
+			return phraseCustomError(err)
 		}
 	}
 
@@ -272,7 +278,7 @@ func (m PhraseModel) UpdateEmbedding(phrase *Phrase, embeddings pgvector.Vector,
 
 //update_embedding_end
 
-// get_all_semantic_start
+/*get_all_semantic_start*/
 func (m PhraseModel) GetAllSemantic(embedding pgvector.Vector, similarity float64, provider string, content_fields []string, message_id int64, filters Filters) ([]*Phrase, Metadata, error) {
 	embeddings_field, err := getEmbeddingsField(provider)
 	if err != nil {
@@ -352,9 +358,9 @@ func (m PhraseModel) GetAllSemantic(embedding pgvector.Vector, similarity float6
 	return phrases, metadata, nil
 }
 
-//get_all_semantic_end
+/*get_all_semantic_end*/
 
-// get_all_without_embeddings_start
+/*get_all_without_embeddings_start*/
 func (m PhraseModel) GetAllWithoutEmbeddings(limit int, provider string) ([]*Phrase, Metadata, error) {
 	embeddings_field, err := getEmbeddingsField(provider)
 	if err != nil {
@@ -421,4 +427,4 @@ func (m PhraseModel) GetAllWithoutEmbeddings(limit int, provider string) ([]*Phr
 	return phrases, metadata, nil
 }
 
-//get_all_without_embeddings_end
+/*get_all_without_embeddings_end*/

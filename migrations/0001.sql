@@ -109,4 +109,45 @@ EXECUTE PROCEDURE phrases_update_modified_at();
 
 -- phrases table end
 
+-- user table start
+
+CREATE TABLE IF NOT EXISTS users (
+	id bigserial PRIMARY KEY,
+	name text NOT NULL,
+	email citext UNIQUE NOT NULL,
+	password_hash bytea NOT NULL,
+	activated bool NOT NULL,
+	version integer NOT NULL DEFAULT 1,
+	created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+	modified_at timestamp(0) with time zone NOT NULL DEFAULT NOW()
+);
+
+-- auto update modified_at
+CREATE OR REPLACE FUNCTION users_update_modified_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.modified_at = NOW();
+    RETURN NEW;
+END;
+
+$$ language 'plpgsql';
+
+CREATE TRIGGER users_trigger_update_modified_at
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE PROCEDURE users_update_modified_at();
+
+-- user table end
+
+-- tokens table start
+
+CREATE TABLE IF NOT EXISTS tokens (
+	hash bytea PRIMARY KEY,
+	user_id bigint NOT NULL REFERENCES users ON DELETE CASCADE,
+	expiry timestamp(0) with time zone NOT NULL,
+	scope text NOT NULL
+);
+
+-- tokens table end
+
 COMMIT;

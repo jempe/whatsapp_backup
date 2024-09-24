@@ -45,7 +45,7 @@ func (app *application) createMessageHandler(w http.ResponseWriter, r *http.Requ
 
 	err = app.models.Messages.Insert(message)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		app.handleCustomMessageErrors(err, w, r, v)
 		return
 	}
 
@@ -156,10 +156,11 @@ func (app *application) updateMessageHandler(w http.ResponseWriter, r *http.Requ
 
 	err = app.models.Messages.Update(message)
 	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrEditConflict):
+
+		if errors.Is(err, data.ErrEditConflict) {
 			app.editConflictResponse(w, r)
-		default:
+			app.handleCustomMessageErrors(err, w, r, v)
+		} else {
 			app.serverErrorResponse(w, r, err)
 		}
 		return
@@ -234,3 +235,35 @@ func (app *application) listMessageHandler(w http.ResponseWriter, r *http.Reques
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+/*handle_custom_errors_start*/
+
+func (app application) handleCustomMessageErrors(err error, w http.ResponseWriter, r *http.Request, v *validator.Validator) {
+	switch {
+	//	case errors.Is(err, data.ErrDuplicateMessageTitleEn):
+	//		v.AddError("title_en", "a title with this name already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicateMessageTitleEs):
+	//		v.AddError("title_es", "a title with this name already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicateMessageTitleFr):
+	//		v.AddError("title_fr", "a title with this name already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicateMessageURLEn):
+	//		v.AddError("url_en", "a video with this URL already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicateMessageURLEs):
+	//		v.AddError("url_es", "a video with this URL already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicateMessageURLFr):
+	//		v.AddError("url_fr", "a video with this URL already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicateMessageFolder):
+	//		v.AddError("folder", "a video with this folder already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	default:
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+/*handle_custom_errors_end*/

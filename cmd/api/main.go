@@ -35,6 +35,8 @@ type config struct {
 		embeddingsPerBatch            int
 		maxTokens                     int
 	}
+	apiKeys struct {
+	}
 	smtp struct {
 		host     string
 		port     int
@@ -144,6 +146,8 @@ func main() {
 		models:        data.NewModels(db),
 		mailer:        mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
 	}
+
+	//custom_code
 
 	if cfg.doCronJob {
 		logger.PrintInfo("Starting Cron Job", nil)

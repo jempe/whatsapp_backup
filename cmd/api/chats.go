@@ -34,7 +34,7 @@ func (app *application) createChatHandler(w http.ResponseWriter, r *http.Request
 
 	err = app.models.Chats.Insert(chat)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		app.handleCustomChatErrors(err, w, r, v)
 		return
 	}
 
@@ -120,10 +120,11 @@ func (app *application) updateChatHandler(w http.ResponseWriter, r *http.Request
 
 	err = app.models.Chats.Update(chat)
 	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrEditConflict):
+
+		if errors.Is(err, data.ErrEditConflict) {
 			app.editConflictResponse(w, r)
-		default:
+			app.handleCustomChatErrors(err, w, r, v)
+		} else {
 			app.serverErrorResponse(w, r, err)
 		}
 		return
@@ -200,3 +201,35 @@ func (app *application) listChatHandler(w http.ResponseWriter, r *http.Request) 
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+/*handle_custom_errors_start*/
+
+func (app application) handleCustomChatErrors(err error, w http.ResponseWriter, r *http.Request, v *validator.Validator) {
+	switch {
+	//	case errors.Is(err, data.ErrDuplicateChatTitleEn):
+	//		v.AddError("title_en", "a title with this name already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicateChatTitleEs):
+	//		v.AddError("title_es", "a title with this name already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicateChatTitleFr):
+	//		v.AddError("title_fr", "a title with this name already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicateChatURLEn):
+	//		v.AddError("url_en", "a video with this URL already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicateChatURLEs):
+	//		v.AddError("url_es", "a video with this URL already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicateChatURLFr):
+	//		v.AddError("url_fr", "a video with this URL already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicateChatFolder):
+	//		v.AddError("folder", "a video with this folder already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	default:
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+/*handle_custom_errors_end*/

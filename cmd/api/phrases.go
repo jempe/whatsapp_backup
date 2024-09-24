@@ -55,7 +55,7 @@ func (app *application) createPhraseHandler(w http.ResponseWriter, r *http.Reque
 
 	err = app.models.Phrases.Insert(phrase)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		app.handleCustomPhraseErrors(err, w, r, v)
 		return
 	}
 
@@ -174,10 +174,11 @@ func (app *application) updatePhraseHandler(w http.ResponseWriter, r *http.Reque
 
 	err = app.models.Phrases.Update(phrase)
 	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrEditConflict):
+
+		if errors.Is(err, data.ErrEditConflict) {
 			app.editConflictResponse(w, r)
-		default:
+			app.handleCustomPhraseErrors(err, w, r, v)
+		} else {
 			app.serverErrorResponse(w, r, err)
 		}
 		return
@@ -255,7 +256,38 @@ func (app *application) listPhraseHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
-// list_phrase_semantic_start
+/*handle_custom_errors_start*/
+
+func (app application) handleCustomPhraseErrors(err error, w http.ResponseWriter, r *http.Request, v *validator.Validator) {
+	switch {
+	//	case errors.Is(err, data.ErrDuplicatePhraseTitleEn):
+	//		v.AddError("title_en", "a title with this name already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicatePhraseTitleEs):
+	//		v.AddError("title_es", "a title with this name already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicatePhraseTitleFr):
+	//		v.AddError("title_fr", "a title with this name already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicatePhraseURLEn):
+	//		v.AddError("url_en", "a video with this URL already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicatePhraseURLEs):
+	//		v.AddError("url_es", "a video with this URL already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicatePhraseURLFr):
+	//		v.AddError("url_fr", "a video with this URL already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	//	case errors.Is(err, data.ErrDuplicatePhraseFolder):
+	//		v.AddError("folder", "a video with this folder already exists")
+	//		app.failedValidationResponse(w, r, v.Errors)
+	default:
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+/*handle_custom_errors_end*/
+/*list_phrase_semantic_start*/
 func (app *application) listPhraseSemanticHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Search             string
@@ -279,7 +311,7 @@ func (app *application) listPhraseSemanticHandler(w http.ResponseWriter, r *http
 	input.ContentFields = app.readCSV(qs, "content_fields", []string{})
 
 	//Additional Semantic Search Filters
-	input.MessageID = app.readInt64(qs, "generic_item_id", 0, v)
+	input.MessageID = app.readInt64(qs, "message_id", 0, v)
 
 	input.Filters.Page = app.readInt(qs, "page", 1, v)
 	input.Filters.PageSize = app.readInt(qs, "page_size", 5, v)
@@ -342,4 +374,4 @@ func (app *application) listPhraseSemanticHandler(w http.ResponseWriter, r *http
 	}
 }
 
-//list_phrase_semantic_end
+/*list_phrase_semantic_end*/

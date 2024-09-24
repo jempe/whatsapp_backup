@@ -9,9 +9,9 @@ import (
 )
 
 type Chat struct {
-	ID         int64     `json:"id,omitempty" db:"id"`
-	Name       string    `json:"name,omitempty" db:"name"`
-	Version    int32     `json:"version,omitempty" db:"version"`
+	ID         int64     `json:"id" db:"id"`
+	Name       string    `json:"name" db:"name"`
+	Version    int32     `json:"version" db:"version"`
 	CreatedAt  time.Time `json:"created_at" db:"created_at"`
 	ModifiedAt time.Time `json:"modified_at" db:"modified_at"`
 }
@@ -37,7 +37,14 @@ func (m ChatModel) Insert(chat *Chat) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel() // releases resources if slowOperation completes before timeout elapses, prevents memory leak
 
-	return m.DB.QueryRowContext(ctx, query, args...).Scan(&chat.ID, &chat.Version, &chat.CreatedAt, &chat.ModifiedAt)
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&chat.ID, &chat.Version, &chat.CreatedAt, &chat.ModifiedAt)
+
+	if err != nil {
+		return chatCustomError(err)
+	}
+
+	return nil
+
 }
 
 func (m ChatModel) Get(id int64) (*Chat, error) {
@@ -97,11 +104,10 @@ func (m ChatModel) Update(chat *Chat) error {
 
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&chat.Version)
 	if err != nil {
-		switch {
-		case errors.Is(err, sql.ErrNoRows):
+		if errors.Is(err, sql.ErrNoRows) {
 			return ErrEditConflict
-		default:
-			return err
+		} else {
+			return chatCustomError(err)
 		}
 	}
 

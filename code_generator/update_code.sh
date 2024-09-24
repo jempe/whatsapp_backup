@@ -15,8 +15,8 @@ error() {
 BASEDIR=..
 APITEMPLATESDIR=$GOPATH/src/github.com/jempe/api_template/templates
 GENERATOR=api_code_generator
-GENERATORVERSION=5
-APITEMPLATESVERSION=2024-07-28_1
+GENERATORVERSION=7
+APITEMPLATESVERSION=2024-09-24_1
 
 SEDBINARY=sed
 
@@ -83,6 +83,9 @@ FOLDERLIST=(
 	internal/jsonlog
 	internal/validator
 	internal/mailer/templates
+	#internal/llms/llmclaude
+	#internal/llms/llmopenai
+	#internal/llms/llmgoogle
 	ui/html/pages
 	ui/html/partials
 	ui/static/img
@@ -127,6 +130,10 @@ FILESLIST=(
 	ui/efs.go
 	ui/html/pages/dashboard.tmpl
 	ui/html/partials/sidebar.tmpl
+	#cmd/api/llms.go
+	#internal/llms/llms.go
+	#internal/llms/llmclaude/claude_api_client.go
+	#internal/llms/llmopenai/openai_api_client.go
 )
 
 for FILE in "${FILESLIST[@]}"

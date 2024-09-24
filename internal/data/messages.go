@@ -9,14 +9,14 @@ import (
 )
 
 type Message struct {
-	ID                   int64     `json:"id,omitempty" db:"id"`
-	MessageDate          time.Time `json:"message_date,omitempty" db:"message_date"`
-	Message              string    `json:"message,omitempty" db:"message"`
-	PhoneNumber          string    `json:"phone_number,omitempty" db:"phone_number"`
-	Attachment           string    `json:"attachment,omitempty" db:"attachment"`
-	ChatID               int64     `json:"chat_id,omitempty" db:"chat_id"`
-	EnableSemanticSearch bool      `json:"enable_semantic_search,omitempty" db:"enable_semantic_search"`
-	Version              int32     `json:"version,omitempty" db:"version"`
+	ID                   int64     `json:"id" db:"id"`
+	MessageDate          time.Time `json:"message_date" db:"message_date"`
+	Message              string    `json:"message" db:"message"`
+	PhoneNumber          string    `json:"phone_number" db:"phone_number"`
+	Attachment           string    `json:"attachment" db:"attachment"`
+	ChatID               int64     `json:"chat_id" db:"chat_id"`
+	EnableSemanticSearch bool      `json:"enable_semantic_search" db:"enable_semantic_search"`
+	Version              int32     `json:"version" db:"version"`
 	CreatedAt            time.Time `json:"created_at" db:"created_at"`
 	ModifiedAt           time.Time `json:"modified_at" db:"modified_at"`
 }
@@ -57,7 +57,14 @@ func (m MessageModel) Insert(message *Message) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel() // releases resources if slowOperation completes before timeout elapses, prevents memory leak
 
-	return m.DB.QueryRowContext(ctx, query, args...).Scan(&message.ID, &message.Version, &message.CreatedAt, &message.ModifiedAt)
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&message.ID, &message.Version, &message.CreatedAt, &message.ModifiedAt)
+
+	if err != nil {
+		return messageCustomError(err)
+	}
+
+	return nil
+
 }
 
 func (m MessageModel) Get(id int64) (*Message, error) {
@@ -137,11 +144,10 @@ func (m MessageModel) Update(message *Message) error {
 
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&message.Version)
 	if err != nil {
-		switch {
-		case errors.Is(err, sql.ErrNoRows):
+		if errors.Is(err, sql.ErrNoRows) {
 			return ErrEditConflict
-		default:
-			return err
+		} else {
+			return messageCustomError(err)
 		}
 	}
 
@@ -242,7 +248,7 @@ func (m MessageModel) GetAll(filters Filters) ([]*Message, Metadata, error) {
 	return messages, metadata, nil
 }
 
-// not_in_semantic_start
+/*not_in_semantic_start*/
 func (m MessageModel) GetAllNotInSemantic(filters Filters, contentField string) ([]*Message, Metadata, error) {
 	query := fmt.Sprintf(`
 		SELECT COUNT(*) OVER(), id,
@@ -302,4 +308,4 @@ func (m MessageModel) GetAllNotInSemantic(filters Filters, contentField string) 
 	return messages, metadata, nil
 }
 
-//not_in_semantic_end
+/*not_in_semantic_end*/
