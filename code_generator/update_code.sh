@@ -15,8 +15,8 @@ error() {
 BASEDIR=..
 APITEMPLATESDIR=$GOPATH/src/github.com/jempe/api_template/templates
 GENERATOR=api_code_generator
-GENERATORVERSION=7
-APITEMPLATESVERSION=2024-09-24_1
+GENERATORVERSION=8
+APITEMPLATESVERSION=2024-09-28_1
 
 SEDBINARY=sed
 
@@ -49,7 +49,7 @@ ACGVERSION=$($GENERATOR -version)
 if [ "$ACGVERSION" == "API Code Generator Version: $GENERATORVERSION" ]; then
 	echo "API code generator version: $ACGVERSION"
 else
-	error "API code generator version mismatch. Expected: $GENERATORVERSION Found: $ACGVERSION \nPlease update it using: go get -u github.com/jempe/api_template/cmd/api_code_generator"
+	error "API code generator version mismatch. Expected: $GENERATORVERSION Found: $ACGVERSION. Please update it using: go get -u github.com/jempe/api_template/cmd/api_code_generator"
 	exit 1
 fi
 
@@ -130,6 +130,7 @@ FILESLIST=(
 	ui/efs.go
 	ui/html/pages/dashboard.tmpl
 	ui/html/partials/sidebar.tmpl
+	ui/html/partials/header.tmpl
 	#cmd/api/llms.go
 	#internal/llms/llms.go
 	#internal/llms/llmclaude/claude_api_client.go
@@ -197,7 +198,6 @@ CLIENTFILES=(
 	ui/html/base.tmpl
 	ui/html/pages/auth_pages.tmpl
 	ui/html/partials/fonts.tmpl
-	ui/html/partials/header.tmpl
 	ui/html/partials/common.tmpl
 	ui/static/img/last_page_24dp_FILL0_wght400_GRAD0_opsz24.svg
 	ui/static/img/chevron_backward_24dp_FILL0_wght400_GRAD0_opsz24.svg

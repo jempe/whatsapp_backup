@@ -187,7 +187,7 @@
 						<input type="checkbox" id="remember_me" name="remember_me" value="true">
 						<label for="remember_me" class="remember_me_label">Remember me</label>
 					</span>
-					<a href="forgot_password.html" class="text_link">Forgot Password?</a>
+					<a href="admin/forgot_password.html" class="text_link">Forgot Password?</a>
 				</div>
 				<button class="big_button" id="submit_button" type="submit">
 					<span class="big_button_spacer"></span>
@@ -195,10 +195,10 @@
 					<img class="big_button_arrow" src="static/img/chevron_forward_24dp_FILL0_wght400_GRAD0_opsz24.svg" alt="arrow right">
 				</button>
 			</form>
-			<p class="footer_message signup_visible">Already have account. <a href="login.html" class="text_link">Sign In</a></p>
-			<p class="footer_message login_visible">Don't have account. <a href="signup.html" class="text_link">Sign Up</a></p>
-			<p class="footer_message activate_visible">Already activated your account. <a href="login.html" class="text_link">Sign In</a></p>
-			<p class="footer_message reset_visible forgot_visible">Remembered your password. <a href="login.html" class="text_link">Sign In</a></p>
+			<p class="footer_message signup_visible">Already have account. <a href="admin/login.html" class="text_link">Sign In</a></p>
+			<p class="footer_message login_visible">Don't have account. <a href="admin/signup.html" class="text_link">Sign Up</a></p>
+			<p class="footer_message activate_visible">Already activated your account. <a href="admin/login.html" class="text_link">Sign In</a></p>
+			<p class="footer_message reset_visible forgot_visible">Remembered your password. <a href="admin/login.html" class="text_link">Sign In</a></p>
 		</div>
 		<script>
 			// define variables start
@@ -348,7 +348,7 @@
 
 						document.cookie = cookieString;
 
-						window.location.href = '';
+						window.location.href = 'admin/';
 
 					} else {
 						userPageContainer.classList.add('success');
@@ -357,7 +357,7 @@
 				} else {
 					const error = await response.json();
 
-					const activateErrorMessage = 'Your account is not activated. Please check your email and click on the activation link or click here to request a <a href="request_activation.html" class="text_link">new activation link</a>';
+					const activateErrorMessage = 'Your account is not activated. Please check your email and click on the activation link or click here to request a <a href="admin/request_activation.html" class="text_link">new activation link</a>';
 
 					if (typeof error.error === 'string') {
 						let errorMessage = error.error;
@@ -418,7 +418,7 @@
 					title.innerHTML = "Activate <br>Account";
 					submitButtonText.innerHTML = "Activate";
 
-					successMessage.innerHTML = "Account activated successfully. You can now <a href='login.html' class='success_text_link'>sign in</a>";
+					successMessage.innerHTML = "Account activated successfully. You can now <a href='admin/login.html' class='success_text_link'>sign in</a>";
 				} else if (view == "reset") {
 					document.title = "Reset Password";
 					title.innerHTML = "Reset <br>Password";

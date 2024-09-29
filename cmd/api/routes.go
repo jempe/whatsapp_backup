@@ -14,7 +14,7 @@ func (app *application) routes() http.Handler {
 
 	router.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
 
-	router.HandlerFunc(http.MethodGet, "/", app.homeHandler)
+	router.HandlerFunc(http.MethodGet, "/admin/", app.homeHandler)
 
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
 
@@ -46,21 +46,21 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPost, "/v1/tokens/activation", app.createActivationTokenHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/tokens/password_reset", app.createPasswordResetTokenHandler)
 
-	router.HandlerFunc(http.MethodGet, "/login.html", app.userPageHandler)
-	router.HandlerFunc(http.MethodGet, "/signup.html", app.userPageHandler)
-	router.HandlerFunc(http.MethodGet, "/activate.html", app.userPageHandler)
-	router.HandlerFunc(http.MethodGet, "/reset_password.html", app.userPageHandler)
-	router.HandlerFunc(http.MethodGet, "/forgot_password.html", app.userPageHandler)
-	router.HandlerFunc(http.MethodGet, "/request_activation.html", app.userPageHandler)
+	router.HandlerFunc(http.MethodGet, "/admin/login.html", app.userPageHandler)
+	router.HandlerFunc(http.MethodGet, "/admin/signup.html", app.userPageHandler)
+	router.HandlerFunc(http.MethodGet, "/admin/activate.html", app.userPageHandler)
+	router.HandlerFunc(http.MethodGet, "/admin/reset_password.html", app.userPageHandler)
+	router.HandlerFunc(http.MethodGet, "/admin/forgot_password.html", app.userPageHandler)
+	router.HandlerFunc(http.MethodGet, "/admin/request_activation.html", app.userPageHandler)
 
-	router.HandlerFunc(http.MethodGet, "/messages.html", app.messagesPageHandler)
-	router.HandlerFunc(http.MethodGet, "/message.html", app.messagePageHandler)
+	router.HandlerFunc(http.MethodGet, "/admin/messages.html", app.messagesPageHandler)
+	router.HandlerFunc(http.MethodGet, "/admin/message.html", app.messagePageHandler)
 
-	router.HandlerFunc(http.MethodGet, "/chats.html", app.chatsPageHandler)
-	router.HandlerFunc(http.MethodGet, "/chat.html", app.chatPageHandler)
+	router.HandlerFunc(http.MethodGet, "/admin/chats.html", app.chatsPageHandler)
+	router.HandlerFunc(http.MethodGet, "/admin/chat.html", app.chatPageHandler)
 
-	router.HandlerFunc(http.MethodGet, "/phrases.html", app.phrasesPageHandler)
-	router.HandlerFunc(http.MethodGet, "/phrase.html", app.phrasePageHandler)
+	router.HandlerFunc(http.MethodGet, "/admin/phrases.html", app.phrasesPageHandler)
+	router.HandlerFunc(http.MethodGet, "/admin/phrase.html", app.phrasePageHandler)
 
 	router.Handler(http.MethodGet, "/static/*filepath", http.FileServerFS(ui.Files))
 

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
@@ -198,4 +200,13 @@ func (app *application) requireActivatedUserHandler(next http.Handler) http.Hand
 	})
 
 	return app.requireAuthenticatedUserHandler(fn)
+}
+
+func (app *application) generateNonce() string {
+	b := make([]byte, 16)
+	_, err := rand.Read(b)
+	if err != nil {
+		return ""
+	}
+	return base64.StdEncoding.EncodeToString(b)
 }

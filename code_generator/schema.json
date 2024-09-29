@@ -14,6 +14,11 @@
 			"item_name": "message",
 			"has_embeddings": false,
 			"used_for_embeddings": true,
+			"ui": {
+				"items_name": "Messages",
+				"item_name": "Message",
+				"in_menu": true
+			},
 			"key" : {
 				"FieldName": "ID",
 				"field_name": "id",
@@ -26,7 +31,12 @@
 					"enable_filter": false,
 					"enable_sort": true,
 					"goType": "time.Time",
-					"use_for_embeddings": false
+					"use_for_embeddings": false,
+					"ui": {
+						"field_name": "Date",
+						"field_type": "date",
+						"in_table": true
+					}
 				},
 				{
 					"FieldName": "Message",
@@ -34,28 +44,48 @@
 					"enable_filter": false,
 					"goType": "string",
 					"use_for_embeddings": true,
-					"use_for_embeddings_title": true
+					"use_for_embeddings_title": true,
+					"ui": {
+						"field_name": "Message",
+						"field_type": "text",
+						"in_table": false
+					}
 				},
 				{
 					"FieldName": "PhoneNumber",
 					"field_name": "phone_number",
 					"enable_filter": false,
 					"goType": "string",
-					"use_for_embeddings": false
+					"use_for_embeddings": false,
+					"ui": {
+						"field_name": "Phone number",
+						"field_type": "text",
+						"in_table": true
+					}
 				},
 				{
 					"FieldName": "Attachment",
 					"field_name": "attachment",
 					"enable_filter": false,
 					"goType": "string",
-					"use_for_embeddings": false
+					"use_for_embeddings": false,
+					"ui": {
+						"field_name": "Attachment",
+						"field_type": "text",
+						"in_table": true
+					}
 				},
 				{
 					"FieldName": "ChatID",
 					"field_name": "chat_id",
 					"enable_filter": false,
 					"enable_semantic_filter": true,
-					"goType": "int64"
+					"goType": "int64",
+					"ui": {
+						"field_name": "Chat",
+						"field_type": "select",
+						"in_table": true
+					}
 				}
 			]
 		},
@@ -66,6 +96,11 @@
 			"item_name": "chat",
 			"has_embeddings": false,
 			"used_for_embeddings": false,
+			"ui": {
+				"items_name": "Chats",
+				"item_name": "Chat",
+				"in_menu": true
+			},
 			"key" : {
 				"FieldName": "ID",
 				"field_name": "id",
@@ -77,7 +112,12 @@
 					"field_name": "name",
 					"enable_filter": true,
 					"enable_sort": true,
-					"goType": "string"
+					"goType": "string",
+					"ui": {
+						"field_name": "Name",
+						"field_type": "text",
+						"in_table": true
+					}
 				}
 			]
 		},
@@ -88,6 +128,11 @@
 			"item_name": "phrase",
 			"has_embeddings": true,
 			"used_for_embeddings": false,
+			"ui": {
+				"items_name": "Phrases",
+				"item_name": "Phrase",
+				"in_menu": false
+			},
 			"key" : {
 				"FieldName": "ID",
 				"field_name": "id",
@@ -99,7 +144,12 @@
 					"field_name": "message_id",
 					"enable_filter": true,
 					"enable_sort": true,
-					"goType": "int64"
+					"goType": "int64",
+					"ui": {
+						"field_name": "Message",
+						"field_type": "select",
+						"in_table": true
+					}
 				}
 			]
 		}
