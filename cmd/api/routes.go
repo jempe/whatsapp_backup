@@ -18,6 +18,12 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
 
+	router.HandlerFunc(http.MethodGet, "/v1/contacts", app.requireActivatedUser(app.listContactHandler))
+	router.HandlerFunc(http.MethodPost, "/v1/contacts", app.requireActivatedUser(app.createContactHandler))
+	router.HandlerFunc(http.MethodGet, "/v1/contacts/:id", app.requireActivatedUser(app.showContactHandler))
+	router.HandlerFunc(http.MethodPatch, "/v1/contacts/:id", app.requireActivatedUser(app.updateContactHandler))
+	router.HandlerFunc(http.MethodDelete, "/v1/contacts/:id", app.requireActivatedUser(app.deleteContactHandler))
+
 	router.HandlerFunc(http.MethodGet, "/v1/messages", app.requireActivatedUser(app.listMessageHandler))
 	router.HandlerFunc(http.MethodPost, "/v1/messages", app.requireActivatedUser(app.createMessageHandler))
 	router.HandlerFunc(http.MethodGet, "/v1/messages/:id", app.requireActivatedUser(app.showMessageHandler))
@@ -52,6 +58,9 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/admin/reset_password.html", app.userPageHandler)
 	router.HandlerFunc(http.MethodGet, "/admin/forgot_password.html", app.userPageHandler)
 	router.HandlerFunc(http.MethodGet, "/admin/request_activation.html", app.userPageHandler)
+
+	router.HandlerFunc(http.MethodGet, "/admin/contacts.html", app.contactsPageHandler)
+	router.HandlerFunc(http.MethodGet, "/admin/contact.html", app.contactPageHandler)
 
 	router.HandlerFunc(http.MethodGet, "/admin/messages.html", app.messagesPageHandler)
 	router.HandlerFunc(http.MethodGet, "/admin/message.html", app.messagePageHandler)

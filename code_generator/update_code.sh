@@ -164,6 +164,7 @@ TABLESLIST=(
 chats
 messages
 phrases
+contacts
 )
 
 SEMANTICSEARCHTABLE=phrases
@@ -286,4 +287,7 @@ echo ""
 $GENERATOR -schema schema.json -table $SEMANTICSEARCHTABLE -overwrite  -output $FILEFULL $APITEMPLATESDIR/cmd/api/cronjob.go.tmpl
 
 gofmt -w $FILEFULL
+
+# change client cookie name
+$SEDBINARY -i 's/"auth_token"/"api_auth_token"/g' $BASEDIR/ui/html/partials/common.tmpl
 

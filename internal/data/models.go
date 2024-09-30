@@ -11,6 +11,7 @@ var (
 )
 
 type Models struct {
+	Contacts ContactModel
 	Messages MessageModel
 	Chats    ChatModel
 	Phrases  PhraseModel
@@ -20,6 +21,7 @@ type Models struct {
 
 func NewModels(db *sql.DB) Models {
 	return Models{
+		Contacts: ContactModel{DB: db},
 		Messages: MessageModel{DB: db},
 		Chats:    ChatModel{DB: db},
 		Phrases:  PhraseModel{DB: db},

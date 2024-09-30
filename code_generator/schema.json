@@ -8,6 +8,50 @@
 	"embeddings_providers": ["sentence-transformers"],
 	"tables": [
 		{
+			"ItemsName": "Contacts",
+			"ItemName": "Contact",
+			"items_name": "contacts",
+			"item_name": "contact",
+			"has_embeddings": false,
+			"used_for_embeddings": false,
+			"ui": {
+				"items_name": "Contacts",
+				"item_name": "Contact",
+				"in_menu": true
+			},
+			"key" : {
+				"FieldName": "ID",
+				"field_name": "id",
+				"goType": "int64"
+			},
+			"fields": [
+				{
+					"FieldName": "Name",
+					"field_name": "name",
+					"enable_filter": true,
+					"enable_sort": true,
+					"goType": "string",
+					"ui": {
+						"field_name": "Name",
+						"field_type": "text",
+						"in_table": true
+					}
+				},
+				{
+					"FieldName": "PhoneNumber",
+					"field_name": "phone_number",
+					"enable_filter": true,
+					"enable_sort": true,
+					"goType": "string",
+					"ui": {
+						"field_name": "Phone Number",
+						"field_type": "text",
+						"in_table": true
+					}
+				}
+			]
+		},
+		{
 			"ItemsName": "Messages",
 			"ItemName": "Message",
 			"items_name": "messages",
@@ -52,13 +96,13 @@
 					}
 				},
 				{
-					"FieldName": "PhoneNumber",
-					"field_name": "phone_number",
+					"FieldName": "ContactID",
+					"field_name": "contact_id",
 					"enable_filter": false,
-					"goType": "string",
+					"goType": "int64",
 					"use_for_embeddings": false,
 					"ui": {
-						"field_name": "Phone number",
+						"field_name": "Contact",
 						"field_type": "text",
 						"in_table": true
 					}
@@ -115,6 +159,18 @@
 					"goType": "string",
 					"ui": {
 						"field_name": "Name",
+						"field_type": "text",
+						"in_table": true
+					}
+				},
+				{
+					"FieldName": "ContactID",
+					"field_name": "contact_id",
+					"enable_filter": true,
+					"enable_sort": true,
+					"goType": "int64",
+					"ui": {
+						"field_name": "Contact",
 						"field_type": "text",
 						"in_table": true
 					}

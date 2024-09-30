@@ -15,7 +15,7 @@ func (app *application) createMessageHandler(w http.ResponseWriter, r *http.Requ
 	var input struct {
 		MessageDate          time.Time `json:"message_date"`
 		Message              string    `json:"message"`
-		PhoneNumber          string    `json:"phone_number"`
+		ContactID            int64     `json:"contact_id"`
 		Attachment           string    `json:"attachment"`
 		ChatID               int64     `json:"chat_id"`
 		EnableSemanticSearch bool      `json:"enable_semantic_search"`
@@ -30,7 +30,7 @@ func (app *application) createMessageHandler(w http.ResponseWriter, r *http.Requ
 	message := &data.Message{
 		MessageDate:          input.MessageDate,
 		Message:              input.Message,
-		PhoneNumber:          input.PhoneNumber,
+		ContactID:            input.ContactID,
 		Attachment:           input.Attachment,
 		ChatID:               input.ChatID,
 		EnableSemanticSearch: input.EnableSemanticSearch,
@@ -111,7 +111,7 @@ func (app *application) updateMessageHandler(w http.ResponseWriter, r *http.Requ
 	var input struct {
 		MessageDate          *time.Time `json:"message_date"`
 		Message              *string    `json:"message"`
-		PhoneNumber          *string    `json:"phone_number"`
+		ContactID            *int64     `json:"contact_id"`
 		Attachment           *string    `json:"attachment"`
 		ChatID               *int64     `json:"chat_id"`
 		EnableSemanticSearch *bool      `json:"enable_semantic_search"`
@@ -131,8 +131,8 @@ func (app *application) updateMessageHandler(w http.ResponseWriter, r *http.Requ
 		message.Message = *input.Message
 	}
 
-	if input.PhoneNumber != nil {
-		message.PhoneNumber = *input.PhoneNumber
+	if input.ContactID != nil {
+		message.ContactID = *input.ContactID
 	}
 
 	if input.Attachment != nil {

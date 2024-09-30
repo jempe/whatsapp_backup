@@ -10,10 +10,10 @@ import (
 	"github.com/jempe/whatsapp_backup/internal/validator"
 )
 
-func (app *application) createChatHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) createContactHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Name      string `json:"name"`
-		ContactID int64  `json:"contact_id"`
+		Name        string `json:"name"`
+		PhoneNumber string `json:"phone_number"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -22,41 +22,41 @@ func (app *application) createChatHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	chat := &data.Chat{
-		Name:      input.Name,
-		ContactID: input.ContactID,
+	contact := &data.Contact{
+		Name:        input.Name,
+		PhoneNumber: input.PhoneNumber,
 	}
 
 	v := validator.New()
 
-	if data.ValidateChat(v, chat, validator.ActionCreate); !v.Valid() {
+	if data.ValidateContact(v, contact, validator.ActionCreate); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	err = app.models.Chats.Insert(chat)
+	err = app.models.Contacts.Insert(contact)
 	if err != nil {
-		app.handleCustomChatErrors(err, w, r, v)
+		app.handleCustomContactErrors(err, w, r, v)
 		return
 	}
 
 	headers := make(http.Header)
-	headers.Set("Location", fmt.Sprintf("/v1/chats/%d", chat.ID))
+	headers.Set("Location", fmt.Sprintf("/v1/contacts/%d", contact.ID))
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"chat": chat}, headers)
+	err = app.writeJSON(w, http.StatusCreated, envelope{"contact": contact}, headers)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 }
 
-func (app *application) showChatHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) showContactHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
 
-	chat, err := app.models.Chats.Get(id)
+	contact, err := app.models.Contacts.Get(id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -67,21 +67,21 @@ func (app *application) showChatHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"chat": chat}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"contact": contact}, nil)
 
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 }
 
-func (app *application) updateChatHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) updateContactHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
 
-	chat, err := app.models.Chats.Get(id)
+	contact, err := app.models.Contacts.Get(id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -93,15 +93,15 @@ func (app *application) updateChatHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	if r.Header.Get("X-Expected-Version") != "" {
-		if strconv.FormatInt(int64(chat.Version), 32) != r.Header.Get("X-Expected-Version") {
+		if strconv.FormatInt(int64(contact.Version), 32) != r.Header.Get("X-Expected-Version") {
 			app.editConflictResponse(w, r)
 			return
 		}
 	}
 
 	var input struct {
-		Name      *string `json:"name"`
-		ContactID *int64  `json:"contact_id"`
+		Name        *string `json:"name"`
+		PhoneNumber *string `json:"phone_number"`
 	}
 
 	err = app.readJSON(w, r, &input)
@@ -111,46 +111,46 @@ func (app *application) updateChatHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	if input.Name != nil {
-		chat.Name = *input.Name
+		contact.Name = *input.Name
 	}
 
-	if input.ContactID != nil {
-		chat.ContactID = *input.ContactID
+	if input.PhoneNumber != nil {
+		contact.PhoneNumber = *input.PhoneNumber
 	}
 
 	v := validator.New()
 
-	if data.ValidateChat(v, chat, validator.ActionUpdate); !v.Valid() {
+	if data.ValidateContact(v, contact, validator.ActionUpdate); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	err = app.models.Chats.Update(chat)
+	err = app.models.Contacts.Update(contact)
 	if err != nil {
 
 		if errors.Is(err, data.ErrEditConflict) {
 			app.editConflictResponse(w, r)
-			app.handleCustomChatErrors(err, w, r, v)
+			app.handleCustomContactErrors(err, w, r, v)
 		} else {
 			app.serverErrorResponse(w, r, err)
 		}
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"chat": chat}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"contact": contact}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 }
 
-func (app *application) deleteChatHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) deleteContactHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
 
-	err = app.models.Chats.Delete(id)
+	err = app.models.Contacts.Delete(id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -161,16 +161,16 @@ func (app *application) deleteChatHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"message": "chat successfully deleted"}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "contact successfully deleted"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 }
 
-func (app *application) listChatHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) listContactHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Name      string
-		ContactID int64
+		Name        string
+		PhoneNumber string
 		data.Filters
 	}
 
@@ -180,7 +180,7 @@ func (app *application) listChatHandler(w http.ResponseWriter, r *http.Request) 
 
 	input.Name = app.readString(qs, "name", "")
 
-	input.ContactID = app.readInt64(qs, "contact_id", 0, v)
+	input.PhoneNumber = app.readString(qs, "phone_number", "")
 
 	input.Filters.Page = app.readInt(qs, "page", 1, v)
 	input.Filters.PageSize = app.readInt(qs, "page_size", 20, v)
@@ -189,10 +189,10 @@ func (app *application) listChatHandler(w http.ResponseWriter, r *http.Request) 
 	input.Filters.SortSafelist = []string{
 		"id",
 		"name",
-		"contact_id",
+		"phone_number",
 		"-id",
 		"-name",
-		"-contact_id",
+		"-phone_number",
 	}
 
 	if data.ValidateFilters(v, input.Filters); !v.Valid() {
@@ -200,16 +200,16 @@ func (app *application) listChatHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	chats, metadata, err := app.models.Chats.GetAll(
+	contacts, metadata, err := app.models.Contacts.GetAll(
 		input.Name,
-		input.ContactID,
+		input.PhoneNumber,
 		input.Filters)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"chats": chats, "metadata": metadata}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"contacts": contacts, "metadata": metadata}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -217,27 +217,27 @@ func (app *application) listChatHandler(w http.ResponseWriter, r *http.Request) 
 
 /*handle_custom_errors_start*/
 
-func (app application) handleCustomChatErrors(err error, w http.ResponseWriter, r *http.Request, v *validator.Validator) {
+func (app application) handleCustomContactErrors(err error, w http.ResponseWriter, r *http.Request, v *validator.Validator) {
 	switch {
-	//	case errors.Is(err, data.ErrDuplicateChatTitleEn):
+	//	case errors.Is(err, data.ErrDuplicateContactTitleEn):
 	//		v.AddError("title_en", "a title with this name already exists")
 	//		app.failedValidationResponse(w, r, v.Errors)
-	//	case errors.Is(err, data.ErrDuplicateChatTitleEs):
+	//	case errors.Is(err, data.ErrDuplicateContactTitleEs):
 	//		v.AddError("title_es", "a title with this name already exists")
 	//		app.failedValidationResponse(w, r, v.Errors)
-	//	case errors.Is(err, data.ErrDuplicateChatTitleFr):
+	//	case errors.Is(err, data.ErrDuplicateContactTitleFr):
 	//		v.AddError("title_fr", "a title with this name already exists")
 	//		app.failedValidationResponse(w, r, v.Errors)
-	//	case errors.Is(err, data.ErrDuplicateChatURLEn):
+	//	case errors.Is(err, data.ErrDuplicateContactURLEn):
 	//		v.AddError("url_en", "a video with this URL already exists")
 	//		app.failedValidationResponse(w, r, v.Errors)
-	//	case errors.Is(err, data.ErrDuplicateChatURLEs):
+	//	case errors.Is(err, data.ErrDuplicateContactURLEs):
 	//		v.AddError("url_es", "a video with this URL already exists")
 	//		app.failedValidationResponse(w, r, v.Errors)
-	//	case errors.Is(err, data.ErrDuplicateChatURLFr):
+	//	case errors.Is(err, data.ErrDuplicateContactURLFr):
 	//		v.AddError("url_fr", "a video with this URL already exists")
 	//		app.failedValidationResponse(w, r, v.Errors)
-	//	case errors.Is(err, data.ErrDuplicateChatFolder):
+	//	case errors.Is(err, data.ErrDuplicateContactFolder):
 	//		v.AddError("folder", "a video with this folder already exists")
 	//		app.failedValidationResponse(w, r, v.Errors)
 	default:

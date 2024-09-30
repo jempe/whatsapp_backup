@@ -81,9 +81,9 @@ button[disabled] {
 						<span class="error_message"></span>
 						<div class="form_field_container">
 
-							<label class="item_field_label" for="chat_name">Name</label>
+							<label class="item_field_label" for="contact_name">Name</label>
 							<span class="item_field_container">
-								<input class="text_field" id="chat_name" name="name" />
+								<input class="text_field" id="contact_name" name="name" />
 							</span>
 						</div>
 					</div>
@@ -91,9 +91,9 @@ button[disabled] {
 						<span class="error_message"></span>
 						<div class="form_field_container">
 
-							<label class="item_field_label" for="chat_contact_id">Contact</label>
+							<label class="item_field_label" for="contact_phone_number">Phone Number</label>
 							<span class="item_field_container">
-								<input class="text_field" id="chat_contact_id" name="contact_id" type="number" />
+								<input class="text_field" id="contact_phone_number" name="phone_number" />
 							</span>
 						</div>
 					</div>
@@ -113,47 +113,47 @@ const successMessageField = document.getElementById("success_message");
 const itemForm = document.getElementById("item_form");
 const itemFormContainer = document.getElementById("item_form_container");
 const submitButton = document.getElementById("submit_button");
-	const fieldName = document.getElementById("chat_name");
-	const fieldContactID = document.getElementById("chat_contact_id");
+	const fieldName = document.getElementById("contact_name");
+	const fieldPhoneNumber = document.getElementById("contact_phone_number");
 fieldName.addEventListener("input", function () {
 	itemFormContainer.classList.remove("success");
 
 	this.closest(".form_field_section").querySelector(".error_message").innerHTML = "";
 });
-fieldContactID.addEventListener("input", function () {
+fieldPhoneNumber.addEventListener("input", function () {
 	itemFormContainer.classList.remove("success");
 
 	this.closest(".form_field_section").querySelector(".error_message").innerHTML = "";
 });
 
-var currentChat = 0;
+var currentContact = 0;
 
 const idQuery = new URLSearchParams(window.location.search).get("id");
 
 if (parseInt(idQuery) > 0) {
-	currentChat = parseInt(idQuery);
+	currentContact = parseInt(idQuery);
 }
 
 if (authToken) {
-	getChat(currentChat);
+	getContact(currentContact);
 } else {
 	gotoLogin();
 }
 
 itemForm.addEventListener("submit", function (event) {
 	event.preventDefault();
-	saveChat();
+	saveContact();
 });
 
-async function getChat(id) {
-	const chatsURL =
-		`v1/chats/${id}`;
+async function getContact(id) {
+	const contactsURL =
+		`v1/contacts/${id}`;
 
 	if (id == 0) {
 		return;
 	}
 
-	const response = await fetch(chatsURL, {
+	const response = await fetch(contactsURL, {
 		method: "GET",
 		headers: getHeaders(),
 	});
@@ -161,29 +161,29 @@ async function getChat(id) {
 	if (response.status === 200) {
 		const jsonData = await response.json();
 
-		const itemData = jsonData.chat;
+		const itemData = jsonData.contact;
 		fieldName.value = itemData.name;
-		fieldContactID.value = itemData.contact_id;
+		fieldPhoneNumber.value = itemData.phone_number;
 
 	} else {
 		gotoLogin();
 	}
 }
 
-async function saveChat() {
+async function saveContact() {
 	submitButton.disabled = true;
 
-	let url = "v1/chats";
+	let url = "v1/contacts";
 	let method = "POST";
 
-	if (currentChat > 0) {
-		url = "v1/chats/" + currentChat;
+	if (currentContact > 0) {
+		url = "v1/contacts/" + currentContact;
 		method = "PATCH";
 	}
 
 	const data = {
 		name: fieldName.value,
-		contact_id: parseInt(fieldContactID.value),
+		phone_number: fieldPhoneNumber.value,
 	};
 
 	const response = await fetch(url, {
@@ -195,11 +195,11 @@ async function saveChat() {
 	if (response.ok) {
 		const serverResponse = await response.json();
 		
-		successMessageField.innerHTML = "Chat saved successfully";
+		successMessageField.innerHTML = "Contact saved successfully";
 
-		history.pushState(null, "", "admin/chat.html?id=" + serverResponse.chat.id);
+		history.pushState(null, "", "admin/contact.html?id=" + serverResponse.contact.id);
 
-		currentChat = serverResponse.chat.id;
+		currentContact = serverResponse.contact.id;
 
 		itemFormContainer.classList.add("success");
 

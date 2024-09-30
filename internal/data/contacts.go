@@ -8,24 +8,24 @@ import (
 	"time"
 )
 
-type Chat struct {
-	ID         int64     `json:"id" db:"id"`
-	Name       string    `json:"name" db:"name"`
-	ContactID  int64     `json:"contact_id" db:"contact_id"`
-	Version    int32     `json:"version" db:"version"`
-	CreatedAt  time.Time `json:"created_at" db:"created_at"`
-	ModifiedAt time.Time `json:"modified_at" db:"modified_at"`
+type Contact struct {
+	ID          int64     `json:"id" db:"id"`
+	Name        string    `json:"name" db:"name"`
+	PhoneNumber string    `json:"phone_number" db:"phone_number"`
+	Version     int32     `json:"version" db:"version"`
+	CreatedAt   time.Time `json:"created_at" db:"created_at"`
+	ModifiedAt  time.Time `json:"modified_at" db:"modified_at"`
 }
 
-type ChatModel struct {
+type ContactModel struct {
 	DB *sql.DB
 }
 
-func (m ChatModel) Insert(chat *Chat) error {
+func (m ContactModel) Insert(contact *Contact) error {
 	query := `
-		INSERT INTO chats (
+		INSERT INTO contacts (
 			name,
-			contact_id
+			phone_number
 		)
 		VALUES (
 			$1,
@@ -34,24 +34,24 @@ func (m ChatModel) Insert(chat *Chat) error {
 		RETURNING id, version, created_at, modified_at`
 
 	args := []any{
-		chat.Name,
-		chat.ContactID,
+		contact.Name,
+		contact.PhoneNumber,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel() // releases resources if slowOperation completes before timeout elapses, prevents memory leak
 
-	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&chat.ID, &chat.Version, &chat.CreatedAt, &chat.ModifiedAt)
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&contact.ID, &contact.Version, &contact.CreatedAt, &contact.ModifiedAt)
 
 	if err != nil {
-		return chatCustomError(err)
+		return contactCustomError(err)
 	}
 
 	return nil
 
 }
 
-func (m ChatModel) Get(id int64) (*Chat, error) {
+func (m ContactModel) Get(id int64) (*Contact, error) {
 	if id < 1 {
 		return nil, ErrRecordNotFound
 	}
@@ -59,23 +59,23 @@ func (m ChatModel) Get(id int64) (*Chat, error) {
 	query := `
 		SELECT id,
 		name,
-		contact_id,
+		phone_number,
 		version, created_at, modified_at
-		FROM chats
+		FROM contacts
 		WHERE id = $1`
 
-	var chat Chat
+	var contact Contact
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel() // releases resources if slowOperation completes before timeout elapses, prevents memory leak
 
 	err := m.DB.QueryRowContext(ctx, query, id).Scan(
-		&chat.ID,
-		&chat.Name,
-		&chat.ContactID,
-		&chat.Version,
-		&chat.CreatedAt,
-		&chat.ModifiedAt,
+		&contact.ID,
+		&contact.Name,
+		&contact.PhoneNumber,
+		&contact.Version,
+		&contact.CreatedAt,
+		&contact.ModifiedAt,
 	)
 
 	if err != nil {
@@ -87,48 +87,48 @@ func (m ChatModel) Get(id int64) (*Chat, error) {
 		}
 	}
 
-	return &chat, nil
+	return &contact, nil
 }
 
-func (m ChatModel) Update(chat *Chat) error {
+func (m ContactModel) Update(contact *Contact) error {
 	query := `
-		UPDATE chats
+		UPDATE contacts
 		SET
 		name = $1,
-		contact_id = $2,
+		phone_number = $2,
 		version = version + 1
 		WHERE id = $3 AND version = $4
 		RETURNING version`
 
 	args := []any{
-		chat.Name,
-		chat.ContactID,
-		chat.ID,
-		chat.Version,
+		contact.Name,
+		contact.PhoneNumber,
+		contact.ID,
+		contact.Version,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&chat.Version)
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&contact.Version)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return ErrEditConflict
 		} else {
-			return chatCustomError(err)
+			return contactCustomError(err)
 		}
 	}
 
 	return nil
 }
 
-func (m ChatModel) Delete(id int64) error {
+func (m ContactModel) Delete(id int64) error {
 	if id < 1 {
 		return ErrRecordNotFound
 	}
 
 	query := `
-		DELETE FROM chats
+		DELETE FROM contacts
 		WHERE id = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -151,16 +151,16 @@ func (m ChatModel) Delete(id int64) error {
 	return nil
 }
 
-func (m ChatModel) GetAll(name string, contact_id int64, filters Filters) ([]*Chat, Metadata, error) {
+func (m ContactModel) GetAll(name string, phone_number string, filters Filters) ([]*Contact, Metadata, error) {
 	query := fmt.Sprintf(`
 		SELECT COUNT(*) OVER(), id,
 		name,
-		contact_id,
+		phone_number,
 		version, created_at, modified_at
-		FROM chats
+		FROM contacts
 		WHERE
 		(to_tsvector('simple', name) @@ plainto_tsquery('simple', $1) OR $1 = '') AND 
-		(contact_id = $2 OR $2 = 0)
+		(to_tsvector('simple', phone_number) @@ plainto_tsquery('simple', $2) OR $2 = '')
 		ORDER BY %s %s, id ASC
 		LIMIT $3 OFFSET $4`, filters.sortColumn(), filters.sortDirection())
 
@@ -169,7 +169,7 @@ func (m ChatModel) GetAll(name string, contact_id int64, filters Filters) ([]*Ch
 
 	args := []any{
 		name,
-		contact_id,
+		phone_number,
 		filters.limit(),
 		filters.offset(),
 	}
@@ -182,26 +182,26 @@ func (m ChatModel) GetAll(name string, contact_id int64, filters Filters) ([]*Ch
 	defer rows.Close()
 
 	totalRecords := 0
-	chats := []*Chat{}
+	contacts := []*Contact{}
 
 	for rows.Next() {
-		var chat Chat
+		var contact Contact
 
 		err := rows.Scan(
 			&totalRecords,
-			&chat.ID,
-			&chat.Name,
-			&chat.ContactID,
-			&chat.Version,
-			&chat.CreatedAt,
-			&chat.ModifiedAt,
+			&contact.ID,
+			&contact.Name,
+			&contact.PhoneNumber,
+			&contact.Version,
+			&contact.CreatedAt,
+			&contact.ModifiedAt,
 		)
 
 		if err != nil {
 			return nil, Metadata{}, err
 		}
 
-		chats = append(chats, &chat)
+		contacts = append(contacts, &contact)
 	}
 
 	if err = rows.Err(); err != nil {
@@ -210,5 +210,5 @@ func (m ChatModel) GetAll(name string, contact_id int64, filters Filters) ([]*Ch
 
 	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
 
-	return chats, metadata, nil
+	return contacts, metadata, nil
 }

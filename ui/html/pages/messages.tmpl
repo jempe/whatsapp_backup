@@ -138,8 +138,8 @@ button[disabled] {
 					<span class="messages_message_date_column">
 						<p class="messages_label">Date</p>
 					</span>
-					<span class="messages_phone_number_column">
-						<p class="messages_label">Phone number</p>
+					<span class="messages_contact_id_column">
+						<p class="messages_label">Contact</p>
 					</span>
 					<span class="messages_attachment_column">
 						<p class="messages_label">Attachment</p>
@@ -190,8 +190,8 @@ button[disabled] {
 			<span class="messages_message_date_column">
 				<p class="messages_component_text" data-field="message_date">MessageDate</p>
 			</span>
-			<span class="messages_phone_number_column">
-				<p class="messages_component_text" data-field="phone_number">PhoneNumber</p>
+			<span class="messages_contact_id_column">
+				<p class="messages_component_text" data-field="contact_id">ContactID</p>
 			</span>
 			<span class="messages_attachment_column">
 				<p class="messages_component_text" data-field="attachment">Attachment</p>
@@ -288,7 +288,7 @@ async function generateList(messages) {
 		messageItem.querySelector("[data-field=id]").innerHTML = formatInteger(message.id);
 		//messageItem.querySelector("[data-field=created_at]").innerHTML = createdAtString;
 		messageItem.querySelector("[data-field=message_date]").innerHTML = message.message_date;
-		messageItem.querySelector("[data-field=phone_number]").innerHTML = message.phone_number;
+		messageItem.querySelector("[data-field=contact_id]").innerHTML = message.contact_id;
 		messageItem.querySelector("[data-field=attachment]").innerHTML = message.attachment;
 		messageItem.querySelector("[data-field=chat_id]").innerHTML = message.chat_id;
 

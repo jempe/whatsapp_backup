@@ -12,7 +12,7 @@ type Message struct {
 	ID                   int64     `json:"id" db:"id"`
 	MessageDate          time.Time `json:"message_date" db:"message_date"`
 	Message              string    `json:"message" db:"message"`
-	PhoneNumber          string    `json:"phone_number" db:"phone_number"`
+	ContactID            int64     `json:"contact_id" db:"contact_id"`
 	Attachment           string    `json:"attachment" db:"attachment"`
 	ChatID               int64     `json:"chat_id" db:"chat_id"`
 	EnableSemanticSearch bool      `json:"enable_semantic_search" db:"enable_semantic_search"`
@@ -30,7 +30,7 @@ func (m MessageModel) Insert(message *Message) error {
 		INSERT INTO messages (
 			message_date,
 			message,
-			phone_number,
+			contact_id,
 			attachment,
 			chat_id
 			, enable_semantic_search
@@ -48,7 +48,7 @@ func (m MessageModel) Insert(message *Message) error {
 	args := []any{
 		message.MessageDate,
 		message.Message,
-		message.PhoneNumber,
+		message.ContactID,
 		message.Attachment,
 		message.ChatID,
 		message.EnableSemanticSearch,
@@ -76,7 +76,7 @@ func (m MessageModel) Get(id int64) (*Message, error) {
 		SELECT id,
 		message_date,
 		message,
-		phone_number,
+		contact_id,
 		attachment,
 		chat_id,
 		enable_semantic_search,
@@ -93,7 +93,7 @@ func (m MessageModel) Get(id int64) (*Message, error) {
 		&message.ID,
 		&message.MessageDate,
 		&message.Message,
-		&message.PhoneNumber,
+		&message.ContactID,
 		&message.Attachment,
 		&message.ChatID,
 		&message.EnableSemanticSearch,
@@ -120,7 +120,7 @@ func (m MessageModel) Update(message *Message) error {
 		SET
 		message_date = $1,
 		message = $2,
-		phone_number = $3,
+		contact_id = $3,
 		attachment = $4,
 		chat_id = $5,
 		enable_semantic_search = $6,
@@ -131,7 +131,7 @@ func (m MessageModel) Update(message *Message) error {
 	args := []any{
 		message.MessageDate,
 		message.Message,
-		message.PhoneNumber,
+		message.ContactID,
 		message.Attachment,
 		message.ChatID,
 		message.EnableSemanticSearch,
@@ -188,7 +188,7 @@ func (m MessageModel) GetAll(filters Filters) ([]*Message, Metadata, error) {
 		SELECT COUNT(*) OVER(), id,
 		message_date,
 		message,
-		phone_number,
+		contact_id,
 		attachment,
 		chat_id,
 		enable_semantic_search,
@@ -223,7 +223,7 @@ func (m MessageModel) GetAll(filters Filters) ([]*Message, Metadata, error) {
 			&message.ID,
 			&message.MessageDate,
 			&message.Message,
-			&message.PhoneNumber,
+			&message.ContactID,
 			&message.Attachment,
 			&message.ChatID,
 			&message.EnableSemanticSearch,

@@ -14,6 +14,18 @@ func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, http.StatusOK, "dashboard.tmpl", data)
 }
 
+func (app *application) contactsPageHandler(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	data.Title = "Contacts"
+	app.render(w, r, http.StatusOK, "contacts.tmpl", data)
+}
+
+func (app *application) contactPageHandler(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	data.Title = "Contact"
+	app.render(w, r, http.StatusOK, "contacts_item.tmpl", data)
+}
+
 func (app *application) messagesPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.Title = "Messages"

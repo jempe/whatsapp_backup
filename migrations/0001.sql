@@ -13,11 +13,43 @@ INSERT INTO migrations (version) VALUES (1);
 
 -- migration table end
 
+-- contacts table start
+
+CREATE TABLE IF NOT EXISTS contacts (
+	id BIGSERIAL PRIMARY KEY,
+	phone_number TEXT NOT NULL UNIQUE,
+	name TEXT NOT NULL,
+	version INTEGER NOT NULL DEFAULT 1,
+	created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+	modified_at timestamp(0) with time zone NOT NULL DEFAULT NOW()
+);
+
+-- auto update modified_at
+
+CREATE OR REPLACE FUNCTION contacts_update_modified_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.modified_at = NOW();
+    RETURN NEW;
+END;
+
+$$ language 'plpgsql';
+
+CREATE TRIGGER contacts_trigger_update_modified_at
+BEFORE UPDATE ON contacts
+FOR EACH ROW
+EXECUTE PROCEDURE contacts_update_modified_at();
+
+-- contacts table end
+
+INSERT INTO contacts (id, phone_number, name) VALUES (0, '0', 'Group');
+
 -- chats table start
 
 CREATE TABLE IF NOT EXISTS chats (
 	id BIGSERIAL PRIMARY KEY,
 	name TEXT NOT NULL UNIQUE,
+	contact_id BIGINT NOT NULL REFERENCES contacts(id),
 	version INTEGER NOT NULL DEFAULT 1,
 	created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
 	modified_at timestamp(0) with time zone NOT NULL DEFAULT NOW()
@@ -45,7 +77,7 @@ EXECUTE PROCEDURE chats_update_modified_at();
 CREATE TABLE messages (
 	id BIGSERIAL PRIMARY KEY,
 	message_date timestamp(0) with time zone NOT NULL DEFAULT NOW(),
-	phone_number TEXT NOT NULL,
+	contact_id BIGINT NOT NULL REFERENCES contacts(id),
 	message TEXT NOT NULL,
 	attachment TEXT NOT NULL,
 	enable_semantic_search BOOLEAN NOT NULL DEFAULT TRUE,
@@ -53,7 +85,7 @@ CREATE TABLE messages (
 	version INTEGER NOT NULL DEFAULT 1,
 	created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
 	modified_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
-	UNIQUE(message_date, phone_number)
+	UNIQUE(message_date, contact_id)
 );
 
 CREATE OR REPLACE FUNCTION messages_update_modified_at()
