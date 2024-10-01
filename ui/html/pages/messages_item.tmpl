@@ -75,6 +75,7 @@ button[disabled] {
 
 		<section class="item_form_container" id="item_form_container">
 			<p class="success_message" id="success_message" ></p>
+			<p class="error_message" id="error_message"></p>
 			<form class="item_form" id="item_form">
 				<div class="form_inputs">
 					<div class="form_field_section">
@@ -83,7 +84,7 @@ button[disabled] {
 
 							<label class="item_field_label" for="message_message_date">Date</label>
 							<span class="item_field_container">
-								<input class="text_field" id="message_message_date" name="message_date" />
+								<input class="text_field" id="message_message_date" name="message_date" type="datetime-local" />
 							</span>
 						</div>
 					</div>
@@ -93,7 +94,7 @@ button[disabled] {
 
 							<label class="item_field_label" for="message_message">Message</label>
 							<span class="item_field_container">
-								<input class="text_field" id="message_message" name="message" />
+								<textarea class="textarea_field" id="message_message" name="message"></textarea>
 							</span>
 						</div>
 					</div>
@@ -103,7 +104,7 @@ button[disabled] {
 
 							<label class="item_field_label" for="message_contact_id">Contact</label>
 							<span class="item_field_container">
-								<input class="text_field" id="message_contact_id" name="contact_id" />
+								<input class="text_field" id="message_contact_id" name="contact_id" type="number" />
 							</span>
 						</div>
 					</div>
@@ -123,7 +124,7 @@ button[disabled] {
 
 							<label class="item_field_label" for="message_chat_id">Chat</label>
 							<span class="item_field_container">
-								<input class="text_field" id="message_chat_id" name="chat_id" />
+								<input class="text_field" id="message_chat_id" name="chat_id" type="number" />
 							</span>
 						</div>
 					</div>
@@ -140,14 +141,15 @@ button[disabled] {
         </main>
 		<script>
 const successMessageField = document.getElementById("success_message");
+const errorMessageField = document.getElementById("error_message");
 const itemForm = document.getElementById("item_form");
 const itemFormContainer = document.getElementById("item_form_container");
 const submitButton = document.getElementById("submit_button");
-	const fieldMessageDate = document.getElementById("message_message_date");
-	const fieldMessage = document.getElementById("message_message");
-	const fieldContactID = document.getElementById("message_contact_id");
-	const fieldAttachment = document.getElementById("message_attachment");
-	const fieldChatID = document.getElementById("message_chat_id");
+const fieldMessageDate = document.getElementById("message_message_date");
+const fieldMessage = document.getElementById("message_message");
+const fieldContactID = document.getElementById("message_contact_id");
+const fieldAttachment = document.getElementById("message_attachment");
+const fieldChatID = document.getElementById("message_chat_id");
 fieldMessageDate.addEventListener("input", function () {
 	itemFormContainer.classList.remove("success");
 
@@ -210,7 +212,7 @@ async function getMessage(id) {
 		const jsonData = await response.json();
 
 		const itemData = jsonData.message;
-		fieldMessageDate.value = itemData.message_date;
+		fieldMessageDate.value = itemData.message_date.slice(0, 16);
 		fieldMessage.value = itemData.message;
 		fieldContactID.value = itemData.contact_id;
 		fieldAttachment.value = itemData.attachment;
@@ -233,11 +235,11 @@ async function saveMessage() {
 	}
 
 	const data = {
-		message_date: fieldMessageDate.value,
+		message_date: new Date(fieldMessageDate.value).toISOString(),
 		message: fieldMessage.value,
-		contact_id: fieldContactID.value,
+		contact_id: parseInt(fieldContactID.value),
 		attachment: fieldAttachment.value,
-		chat_id: fieldChatID.value,
+		chat_id: parseInt(fieldChatID.value),
 	};
 
 	const response = await fetch(url, {

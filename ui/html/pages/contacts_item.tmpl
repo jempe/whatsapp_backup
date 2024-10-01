@@ -75,6 +75,7 @@ button[disabled] {
 
 		<section class="item_form_container" id="item_form_container">
 			<p class="success_message" id="success_message" ></p>
+			<p class="error_message" id="error_message"></p>
 			<form class="item_form" id="item_form">
 				<div class="form_inputs">
 					<div class="form_field_section">
@@ -110,11 +111,12 @@ button[disabled] {
         </main>
 		<script>
 const successMessageField = document.getElementById("success_message");
+const errorMessageField = document.getElementById("error_message");
 const itemForm = document.getElementById("item_form");
 const itemFormContainer = document.getElementById("item_form_container");
 const submitButton = document.getElementById("submit_button");
-	const fieldName = document.getElementById("contact_name");
-	const fieldPhoneNumber = document.getElementById("contact_phone_number");
+const fieldName = document.getElementById("contact_name");
+const fieldPhoneNumber = document.getElementById("contact_phone_number");
 fieldName.addEventListener("input", function () {
 	itemFormContainer.classList.remove("success");
 

@@ -78,7 +78,7 @@
 					"use_for_embeddings": false,
 					"ui": {
 						"field_name": "Date",
-						"field_type": "date",
+						"field_type": "datetime",
 						"in_table": true
 					}
 				},
@@ -91,7 +91,7 @@
 					"use_for_embeddings_title": true,
 					"ui": {
 						"field_name": "Message",
-						"field_type": "text",
+						"field_type": "textarea",
 						"in_table": false
 					}
 				},
@@ -103,7 +103,7 @@
 					"use_for_embeddings": false,
 					"ui": {
 						"field_name": "Contact",
-						"field_type": "text",
+						"field_type": "number",
 						"in_table": true
 					}
 				},
@@ -127,7 +127,7 @@
 					"goType": "int64",
 					"ui": {
 						"field_name": "Chat",
-						"field_type": "select",
+						"field_type": "number",
 						"in_table": true
 					}
 				}
@@ -171,7 +171,7 @@
 					"goType": "int64",
 					"ui": {
 						"field_name": "Contact",
-						"field_type": "text",
+						"field_type": "number",
 						"in_table": true
 					}
 				}
@@ -203,7 +203,7 @@
 					"goType": "int64",
 					"ui": {
 						"field_name": "Message",
-						"field_type": "select",
+						"field_type": "number",
 						"in_table": true
 					}
 				}
